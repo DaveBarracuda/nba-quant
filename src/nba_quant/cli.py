@@ -198,12 +198,15 @@ def main(argv: list[str] | None = None) -> None:
         if name == "track-snapshot":
             t.add_argument("--hours", type=float, default=48.0, help="horizonte de partidos a proyectar")
             t.add_argument("--seasons", type=int, nargs="*", default=None)
+        else:
+            t.add_argument("--publish-ledger", action="store_true",
+                           help="commit + push de ledger/ a GitHub (sólo si cambió)")
     sub.add_parser("demo")
     args = parser.parse_args(argv)
     handlers = {"ingest": cmd_ingest, "features": cmd_features, "simulate": cmd_simulate,
                 "backtest": cmd_backtest, "calibrate": cmd_calibrate, "demo": lambda c, a: run_demo(c),
                 "track-snapshot": lambda c, a: tracker_jobs.run_snapshot(c, a.tracker_db, a.hours, a.seasons),
-                "track-report": lambda c, a: tracker_jobs.run_report(c, a.tracker_db)}
+                "track-report": lambda c, a: tracker_jobs.run_report(c, a.tracker_db, a.publish_ledger)}
     handlers[args.cmd](DEFAULT_CONFIG, args)
 
 

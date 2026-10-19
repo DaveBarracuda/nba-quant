@@ -19,6 +19,7 @@ from nba_quant.ingestion.engine import DataIngestionLayer
 from nba_quant.integrations.odds_tracker import DEFAULT_TRACKER_DB, OddsTrackerReader, match_games
 from nba_quant.ledger import write_ledger
 from nba_quant.logging_utils import get_logger
+from nba_quant.publish import publish_ledger
 from nba_quant.simulation.market_moves import (build_snapshots, first_snapshot_picks, model_vs_market_drift,
                                                pick_table, summarize)
 from nba_quant.simulation.slate import MODEL_VERSION
@@ -91,7 +92,8 @@ def snapshot_table(snaps: pd.DataFrame) -> str:
     return "Snapshot del modelo vs línea actual del tracker:\n" + t.to_string(index=False)
 
 
-def run_report(cfg: EngineConfig, tracker_db: Path = DEFAULT_TRACKER_DB) -> pd.DataFrame:
+def run_report(cfg: EngineConfig, tracker_db: Path = DEFAULT_TRACKER_DB,
+               publish: bool = False) -> pd.DataFrame:
     """Califica los picks de los snapshots (primer snapshot por partido-mercado = pick oficial)."""
     lake = DataLake(cfg.paths)
     snaps = lake.read("model_snapshots")
@@ -119,6 +121,8 @@ def run_report(cfg: EngineConfig, tracker_db: Path = DEFAULT_TRACKER_DB) -> pd.D
     drift.to_csv(out / "tracker_model_vs_market_drift.csv", index=False)
     ledger = write_ledger(official, summary)
     _emit(f"Ledger actualizado: {ledger}")
+    if publish:
+        _emit(f"Publicación en GitHub: {publish_ledger(label=pd.Timestamp.now(tz='UTC').strftime('%Y-%m-%d'))}")
     pd.set_option("display.width", 220)
     _emit("WR de los picks (primer snapshot por partido y mercado):\n"
           + (summary.round(3).to_string(index=False) if not summary.empty else "(sin picks)"))

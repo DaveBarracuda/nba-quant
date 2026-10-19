@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import sqlite3
+import subprocess
 
 import numpy as np
 import pandas as pd
 import pytest
 
 from nba_quant.ledger import ledger_rows, write_ledger
+from nba_quant.publish import publish_ledger
 from nba_quant.integrations.odds_tracker import OddsTrackerReader, closing_line, match_games
 from nba_quant.simulation.market_moves import (build_snapshots, first_snapshot_picks, model_vs_market_drift,
                                                pick_table, summarize)
@@ -121,6 +123,28 @@ def test_ledger_shows_moves_and_results(tracker_db, tmp_path) -> None:
     assert float(rows.loc["ML", "Línea pick"].rstrip("%")) < 50
     empty = write_ledger(official.iloc[0:0], summarize(official.iloc[0:0]), tmp_path / "empty")
     assert "_Sin picks todavía._" in empty.read_text(encoding="utf-8")
+
+
+def _run(repo, *args: str) -> str:
+    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, check=True).stdout
+
+
+def test_publish_ledger_commits_only_ledger_and_pushes(tmp_path) -> None:
+    remote, repo = tmp_path / "remote.git", tmp_path / "repo"
+    subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+    subprocess.run(["git", "init", "-q", "-b", "main", str(repo)], check=True)
+    for k, v in (("user.name", "t"), ("user.email", "t@t"), ("commit.gpgsign", "false")):
+        _run(repo, "config", k, v)
+    _run(repo, "remote", "add", "origin", str(remote))
+    (repo / "ledger").mkdir()
+    (repo / "ledger" / "LEDGER.md").write_text("v1", encoding="utf-8")
+    (repo / "other.txt").write_text("x", encoding="utf-8")
+    _run(repo, "add", "other.txt")  # en stage pero fuera del ledger: no debe entrar al commit
+    assert publish_ledger(repo, repo / "ledger", "2026-10-21") == "publicado"
+    assert _run(remote, "log", "--format=%s", "main").strip() == "chore(ledger): picks al 2026-10-21"
+    assert _run(remote, "show", "--name-only", "--format=", "main").split() == ["ledger/LEDGER.md"]
+    assert publish_ledger(repo, repo / "ledger") == "sin cambios"
+    assert publish_ledger(tmp_path / "nogit", tmp_path / "nogit" / "ledger").startswith("error")
 
 
 def test_reader_fails_clearly_without_db(tmp_path) -> None:
