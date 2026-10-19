@@ -1,5 +1,9 @@
 # NBA Quant — motor cuantitativo NBA
 
+> **📒 [Ledger de picks](ledger/LEDGER.md)**: récord general, por mercado y según si el mercado se movió
+> a favor o en contra del modelo (CLV vs cierre del NBA Odds Tracker). Se regenera con
+> `python scripts/run_job.py track-report` (CSV completo en `ledger/picks.csv`).
+
 Pipeline de producción en Python 3.10+ que va de PBP crudo a un tear sheet de mercado:
 
 ```
