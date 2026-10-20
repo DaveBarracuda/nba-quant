@@ -26,6 +26,7 @@ from nba_quant.features.pipeline import NBAAdvancedFeaturePipeline
 from nba_quant.ingestion.engine import DataIngestionLayer
 from nba_quant.integrations.odds_tracker import DEFAULT_TRACKER_DB
 from nba_quant.logging_utils import get_logger
+from nba_quant.settle import run_settle
 from nba_quant.simulation.slate import SlateSimulator
 from nba_quant.storage.lake import DataLake
 
@@ -201,12 +202,14 @@ def main(argv: list[str] | None = None) -> None:
         else:
             t.add_argument("--publish-ledger", action="store_true",
                            help="commit + push de ledger/ a GitHub (sólo si cambió)")
+    sub.add_parser("settle-ledger", help="liquida ledger/picks.csv con marcadores de ESPN (sin lake ni tracker)")
     sub.add_parser("demo")
     args = parser.parse_args(argv)
     handlers = {"ingest": cmd_ingest, "features": cmd_features, "simulate": cmd_simulate,
                 "backtest": cmd_backtest, "calibrate": cmd_calibrate, "demo": lambda c, a: run_demo(c),
                 "track-snapshot": lambda c, a: tracker_jobs.run_snapshot(c, a.tracker_db, a.hours, a.seasons),
-                "track-report": lambda c, a: tracker_jobs.run_report(c, a.tracker_db, a.publish_ledger)}
+                "track-report": lambda c, a: tracker_jobs.run_report(c, a.tracker_db, a.publish_ledger),
+                "settle-ledger": lambda c, a: emit(f"Picks liquidados: {run_settle()}")}
     handlers[args.cmd](DEFAULT_CONFIG, args)
 
 

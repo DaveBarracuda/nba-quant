@@ -1,0 +1,49 @@
+# Liquida a diario los picks del ledger con los marcadores finales de ESPN y sube el récord.
+# Los picks (con la línea del pick, la de cierre y el movimiento a favor/en contra del modelo) los
+# publica la PC local, que es la que ve el lake y el NBA Odds Tracker; este job sólo los califica.
+name: Liquidar ledger
+
+on:
+  schedule:
+    - cron: "0 12 * * *"  # 12:00 UTC = 06:00 CDMX / 08:00 ET: todos los partidos de ayer ya terminaron
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ledger
+  cancel-in-progress: false
+
+jobs:
+  settle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Instalar
+        run: pip install -e .
+
+      - name: Liquidar picks pendientes
+        run: python -m nba_quant.cli settle-ledger
+
+      - name: Publicar ledger
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ledger/
+          if git diff --cached --quiet; then
+            echo "Ledger sin cambios"
+            exit 0
+          fi
+          git commit -m "chore(ledger): liquidación $(date -u +%F)"
+          # Si la PC local publicó mientras tanto, su versión (que ve el tracker) prevalece.
+          git pull --rebase -X ours origin "${GITHUB_REF_NAME}"
+          git push origin HEAD:"${GITHUB_REF_NAME}"

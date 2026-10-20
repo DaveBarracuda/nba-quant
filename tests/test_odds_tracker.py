@@ -11,6 +11,7 @@ import pytest
 
 from nba_quant.ledger import ledger_rows, write_ledger
 from nba_quant.publish import publish_ledger
+from nba_quant.settle import settle_picks
 from nba_quant.integrations.odds_tracker import OddsTrackerReader, closing_line, match_games
 from nba_quant.simulation.market_moves import (build_snapshots, first_snapshot_picks, model_vs_market_drift,
                                                pick_table, summarize)
@@ -125,6 +126,21 @@ def test_ledger_shows_moves_and_results(tracker_db, tmp_path) -> None:
     assert "_Sin picks todavía._" in empty.read_text(encoding="utf-8")
 
 
+def test_settle_grades_pending_picks_from_ledger_csv(tracker_db, tmp_path) -> None:
+    # Picks publicados antes del partido (sin resultado) -> CSV -> liquidación con un marcador final.
+    snaps, r = _snap(tracker_db, -2.0, 226.0, 0.40)  # CHA +3.5, Over 220.5, CHA ML
+    published = pick_table(snaps, r.lines(), FINAL.iloc[0:0])
+    write_ledger(published, summarize(published), tmp_path)
+    csv = pd.read_csv(tmp_path / "picks.csv", dtype={"game_id": str})
+    finals = {"G1": (110, 104)}
+    settled, n = settle_picks(csv, finals.get, pd.Timestamp("2026-10-22T12:00:00Z"))
+    expected = pick_table(snaps, r.lines(), FINAL).set_index("market")[["result", "units"]]
+    assert n == 3
+    pd.testing.assert_frame_equal(settled.set_index("market")[["result", "units"]], expected, check_dtype=False)
+    early, n_early = settle_picks(csv, finals.get, pd.Timestamp("2026-10-22T01:00:00Z"))  # < 4 h tras el salto
+    assert n_early == 0 and early["result"].isna().all()
+
+
 def _run(repo, *args: str) -> str:
     return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, check=True).stdout
 
@@ -144,6 +160,18 @@ def test_publish_ledger_commits_only_ledger_and_pushes(tmp_path) -> None:
     assert _run(remote, "log", "--format=%s", "main").strip() == "chore(ledger): picks al 2026-10-21"
     assert _run(remote, "show", "--name-only", "--format=", "main").split() == ["ledger/LEDGER.md"]
     assert publish_ledger(repo, repo / "ledger") == "sin cambios"
+    # CI liquida y sube su versión; el siguiente publish local se rebasa y su ledger prevalece.
+    ci = tmp_path / "ci"
+    subprocess.run(["git", "clone", "-q", "-b", "main", str(remote), str(ci)], check=True)
+    for k, v in (("user.name", "ci"), ("user.email", "ci@ci"), ("commit.gpgsign", "false")):
+        _run(ci, "config", k, v)
+    (ci / "ledger" / "LEDGER.md").write_text("ci", encoding="utf-8")
+    _run(ci, "commit", "-qam", "ci settle")
+    _run(ci, "push", "-q", "origin", "main")
+    (repo / "ledger" / "LEDGER.md").write_text("v2", encoding="utf-8")
+    assert publish_ledger(repo, repo / "ledger", "2026-10-22") == "publicado"
+    assert _run(remote, "show", "main:ledger/LEDGER.md") == "v2"
+    assert len(_run(remote, "log", "--format=%s", "main").split("\n")) == 4  # 3 commits + línea vacía
     assert publish_ledger(tmp_path / "nogit", tmp_path / "nogit" / "ledger").startswith("error")
 
 

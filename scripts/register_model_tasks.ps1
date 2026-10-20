@@ -20,6 +20,9 @@ Register-ScheduledTask -TaskName "NBA Quant Snapshot" -Action $snap -Trigger $sn
     -Description "Número del modelo vs línea del NBA Odds Tracker" -Force | Out-Null
 
 $rep = New-ScheduledTaskAction -Execute $python -Argument "`"$runner`" track-report --publish-ledger" -WorkingDirectory $root
-Register-ScheduledTask -TaskName "NBA Quant Report" -Action $rep -Trigger (New-ScheduledTaskTrigger -Daily -At 09:00) `
+# 23:30: publica los picks del día con su línea de cierre (el tracker corre hasta las 23:00) para que
+# GitHub Actions los liquide a las 06:00; 09:00: recalifica con el lake local (versión definitiva).
+$repTriggers = @((New-ScheduledTaskTrigger -Daily -At 09:00), (New-ScheduledTaskTrigger -Daily -At 23:30))
+Register-ScheduledTask -TaskName "NBA Quant Report" -Action $rep -Trigger $repTriggers `
     -Settings $settings -Description "WR de los picks y movimiento de mercado vs modelo" -Force | Out-Null
 Write-Host "Tareas registradas. Reportes en $root\data\reports\tracker_*.csv"

@@ -32,6 +32,15 @@ def publish_ledger(repo: Path = PROJECT_ROOT, ledger_dir: Path = DEFAULT_LEDGER_
     commit = _git(repo, "commit", "-m", f"{COMMIT_PREFIX} {label}".strip(), "--", rel)
     if commit.returncode != 0:
         return f"error en commit: {commit.stderr.strip() or commit.stdout.strip()}"
+    # GitHub Actions también liquida el ledger: se rebasa sobre origin y, si ambos tocaron ledger/,
+    # gana la versión local (-X theirs en un rebase = el commit que se reaplica), que ve el tracker.
+    branch = _git(repo, "rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+    has_remote_branch = _git(repo, "ls-remote", "--exit-code", "--heads", "origin", branch).returncode == 0
+    pull = _git(repo, "pull", "--rebase", "--autostash", "-X", "theirs", "origin", branch) if has_remote_branch else None
+    if pull is not None and pull.returncode != 0:
+        _git(repo, "rebase", "--abort")
+        log.error("Rebase del ledger falló: %s", pull.stderr.strip())
+        return f"error en pull: {pull.stderr.strip()}"
     push = _git(repo, "push", "origin", "HEAD")
     if push.returncode != 0:
         log.error("Push del ledger falló: %s", push.stderr.strip())
