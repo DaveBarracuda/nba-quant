@@ -82,5 +82,6 @@ def run_settle(ledger_dir: Path = DEFAULT_LEDGER_DIR) -> int:
         return 0
     client = SyncHttpClient(DEFAULT_CONFIG.http, ESPN_MIN_INTERVAL_S)
     settled, n = settle_picks(picks, lambda gid: espn_final_score(client, gid), pd.Timestamp.now(tz="UTC"))
-    write_ledger(settled, summarize(settled), ledger_dir)
+    if n:  # sin liquidaciones no se reescribe nada: evita commits vacíos de sólo fecha/formato
+        write_ledger(settled, summarize(settled), ledger_dir)
     return n
