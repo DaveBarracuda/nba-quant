@@ -1,21 +1,21 @@
 grupo,valor,picks,calificados,récord,WR,unidades,ROI,CLV medio,% a favor
-GENERAL,todos,42,0,0-0-0,,0.0,,0.11622422274004318,0.23809523809523808
-mercado,ml,14,0,0-0-0,,0.0,,-0.008470188922727592,0.21428571428571427
-mercado,spread,14,0,0-0-0,,0.0,,0.07142857142857142,0.21428571428571427
-mercado,total,14,0,0-0-0,,0.0,,0.2857142857142857,0.2857142857142857
-movimiento,a favor,10,0,0-0-0,,0.0,,1.4020236493352427,1.0
-movimiento,en contra,14,0,0-0-0,,0.0,,-0.652772795590758,0.0
-movimiento,sin movimiento,18,0,0-0-0,,0.0,,0.0,0.0
-mercado × movimiento,ml · a favor,3,0,0-0-0,,0.0,,0.0067454977841418,1.0
-mercado × movimiento,ml · en contra,7,0,0-0-0,,0.0,,-0.019831305467230245,0.0
-mercado × movimiento,ml · sin movimiento,4,0,0-0-0,,0.0,,0.0,0.0
-mercado × movimiento,spread · a favor,3,0,0-0-0,,0.0,,1.6666666666666667,1.0
-mercado × movimiento,spread · en contra,2,0,0-0-0,,0.0,,-2.0,0.0
-mercado × movimiento,spread · sin movimiento,9,0,0-0-0,,0.0,,0.0,0.0
-mercado × movimiento,total · a favor,4,0,0-0-0,,0.0,,2.25,1.0
-mercado × movimiento,total · en contra,5,0,0-0-0,,0.0,,-1.0,0.0
-mercado × movimiento,total · sin movimiento,5,0,0-0-0,,0.0,,0.0,0.0
-alertas tracker,con STEAM/RLM/INFO/GRADUAL,9,0,0-0-0,,0.0,,0.1024174544320303,0.2222222222222222
-alertas tracker,sin alerta,33,0,0-0-0,,0.0,,0.11998970500586485,0.24242424242424243
-público,modelo con el público (≥60% tickets),14,0,0-0-0,,0.0,,-0.006970980342737925,0.21428571428571427
-público,modelo contra el público (≤40% tickets),13,0,0-0-0,,0.0,,-0.15546068616306577,0.23076923076923078
+GENERAL,todos,42,0,0-0-0,,0.0,,-0.0053090243920939405,0.3333333333333333
+mercado,ml,14,0,0-0-0,,0.0,,-0.015927073176281857,0.2857142857142857
+mercado,spread,14,0,0-0-0,,0.0,,-0.35714285714285715,0.2857142857142857
+mercado,total,14,0,0-0-0,,0.0,,0.35714285714285715,0.42857142857142855
+movimiento,a favor,14,0,0-0-0,,0.0,,1.3621793116370178,1.0
+movimiento,en contra,17,0,0-0-0,,0.0,,-1.134911140434482,0.0
+movimiento,sin movimiento,11,0,0-0-0,,0.0,,0.0,0.0
+mercado × movimiento,ml · a favor,4,0,0-0-0,,0.0,,0.017627590729561826,1.0
+mercado × movimiento,ml · en contra,7,0,0-0-0,,0.0,,-0.041927055340884756,0.0
+mercado × movimiento,ml · sin movimiento,3,0,0-0-0,,0.0,,0.0,0.0
+mercado × movimiento,spread · a favor,4,0,0-0-0,,0.0,,1.5,1.0
+mercado × movimiento,spread · en contra,4,0,0-0-0,,0.0,,-2.75,0.0
+mercado × movimiento,spread · sin movimiento,6,0,0-0-0,,0.0,,0.0,0.0
+mercado × movimiento,total · a favor,6,0,0-0-0,,0.0,,2.1666666666666665,1.0
+mercado × movimiento,total · en contra,6,0,0-0-0,,0.0,,-1.3333333333333333,0.0
+mercado × movimiento,total · sin movimiento,2,0,0-0-0,,0.0,,0.0,0.0
+alertas tracker,con STEAM/RLM/INFO/GRADUAL,17,0,0-0-0,,0.0,,-0.4247994643367932,0.29411764705882354
+alertas tracker,sin alerta,25,0,0-0-0,,0.0,,0.2799444747703015,0.36
+público,modelo con el público (≥60% tickets),15,0,0-0-0,,0.0,,-0.348455395639756,0.3333333333333333
+público,modelo contra el público (≤40% tickets),17,0,0-0-0,,0.0,,0.00022658294872916518,0.29411764705882354
