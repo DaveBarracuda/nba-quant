@@ -89,7 +89,7 @@ class ShotQualityModel:
         dates = pd.to_datetime(shots["game_date"])
         x = _design(shots)
         y = shots["made"].astype(int).to_numpy()
-        pred = shots["zone"].map(DEFAULT_FG_BY_ZONE).fillna(0.45).to_numpy(float)
+        pred = shots["zone"].map(DEFAULT_FG_BY_ZONE).fillna(0.45).to_numpy(float, copy=True)  # escribible (CoW)
         start, end = dates.min(), dates.max()
         n_fit = 0
         block = start
