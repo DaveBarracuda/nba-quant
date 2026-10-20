@@ -1,0 +1,94 @@
+# Ejecuta el modelo a demanda: proyecta los partidos de una fecha e imprime en el log la diferencia
+# de puntos proyectada de cada equipo (descendente) vs la línea del mercado.
+# El lake se construye desde ESPN y se guarda en la caché de Actions: la primera corrida descarga
+# 2024-25 → hoy (lenta); las siguientes sólo los partidos nuevos.
+name: Ejecutar modelo
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Fecha de los partidos (AAAA-MM-DD). Vacío = hoy (hora del Este)"
+        required: false
+        default: ""
+      blend:
+        description: "Mezclar modelo y línea de cierre (ajuste previo, ~5 min)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: run-model
+  cancel-in-progress: false
+
+env:
+  LAKE_START: "2024-10-01"  # temporadas 2024-25 y 2025-26 (+ pretemporada 2026-27): base de priors y Kalman
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Instalar
+        run: pip install -e .
+
+      - name: Restaurar lake
+        id: lake
+        uses: actions/cache/restore@v4
+        with:
+          path: data/lake
+          key: lake-${{ github.run_id }}
+          restore-keys: lake-
+
+      - name: Ingesta inicial (sólo sin caché)
+        if: steps.lake.outputs.cache-matched-key == ''
+        run: python -m nba_quant.cli ingest --start "$LAKE_START" --season-types 1 2 3 --with-rosters
+
+      - name: Ingesta incremental
+        if: steps.lake.outputs.cache-matched-key != ''
+        run: python -m nba_quant.cli ingest --season-types 1 2 3
+
+      - name: Guardar lake
+        uses: actions/cache/save@v4
+        with:
+          path: data/lake
+          key: lake-${{ github.run_id }}
+
+      - name: Ejecutar modelo
+        env:
+          INPUT_DATE: ${{ inputs.date }}
+          BLEND: ${{ inputs.blend && '--blend' || '' }}
+        run: |
+          DATE="${INPUT_DATE:-$(TZ=America/New_York date +%F)}"
+          echo "Partidos del $DATE"
+          start=$(date +%s)
+          python -m nba_quant.cli simulate --date "$DATE" $BLEND | tee simulate.log
+          echo "Tiempo de simulación: $(( $(date +%s) - start )) s"
+          {
+            echo "## Diferencia de puntos proyectada por equipo — $DATE"
+            echo '```'
+            sed -n '/DIFERENCIA DE PUNTOS PROYECTADA/,$p' simulate.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Subir tear sheets
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportes-${{ github.run_id }}
+          path: |
+            simulate.log
+            data/reports/
+          if-no-files-found: ignore
+          retention-days: 14

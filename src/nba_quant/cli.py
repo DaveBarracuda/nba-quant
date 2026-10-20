@@ -15,7 +15,7 @@ from __future__ import annotations
 import argparse
 import sys
 from dataclasses import replace
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -73,8 +73,22 @@ def report(projections: list, out_dir: Path) -> None:
 
 # ------------------------------------------------------------------------------ comandos
 def cmd_ingest(cfg: EngineConfig, args: argparse.Namespace) -> None:
-    layer = DataIngestionLayer(cfg, DataLake(cfg.paths))
-    emit(str(layer.ingest_range(date.fromisoformat(args.start), date.fromisoformat(args.end))))
+    lake = DataLake(cfg.paths)
+    layer = DataIngestionLayer(cfg, lake)
+    end = date.fromisoformat(args.end) if args.end else date.today() - timedelta(days=1)
+    if args.start:
+        start = date.fromisoformat(args.start)
+    else:  # incremental: desde el día siguiente al último partido del lake
+        games = lake.read("games")
+        if games.empty:
+            raise SystemExit("El lake está vacío: indique --start")
+        start = pd.Timestamp(games["game_date"].max()).date() + timedelta(days=1)
+    if start > end:
+        emit(f"Lake al día (último partido {start - timedelta(days=1)})")
+    else:
+        emit(f"Ingesta {start} → {end}: " + str(layer.ingest_range(start, end, tuple(args.season_types))))
+    if args.with_rosters:  # foto de plantillas: sólo cuenta como prior si es anterior al 1er partido regular
+        emit(f"Plantillas: {len(layer.ingest_rosters())} jugadores")
     if args.with_injuries:
         emit(f"Lesiones: {len(layer.ingest_injuries())} filas")
 
@@ -111,6 +125,26 @@ def cmd_simulate(cfg: EngineConfig, args: argparse.Namespace) -> None:
     if not preds.empty:
         lake.write("predictions", preds)
     report(projections, cfg.paths.root / "reports")
+    if not preds.empty:
+        emit("\nDIFERENCIA DE PUNTOS PROYECTADA POR EQUIPO (descendente):\n"
+             + team_point_diff_table(preds).to_string(index=False))
+
+
+def team_point_diff_table(preds: pd.DataFrame) -> pd.DataFrame:
+    """Una fila por equipo: puntos y diferencial proyectados vs la línea del mercado, de mayor a menor."""
+    sides = []
+    for sign, team, rival, venue in ((1, "home_team", "away_team", "local"), (-1, "away_team", "home_team", "visita")):
+        margin = sign * preds["exp_margin"]
+        line = sign * pd.to_numeric(preds["market_spread_home"], errors="coerce")  # spread del equipo
+        p_win = preds["p_home_win_markov"] if sign == 1 else 1 - preds["p_home_win_markov"]
+        sides.append(pd.DataFrame({
+            "equipo": preds[team], "rival": preds[rival], "sede": venue,
+            "pts proyectados": (preds["exp_total"] + margin) / 2, "diferencia proyectada": margin,
+            "diferencia mercado": -line, "edge vs mercado": margin + line, "P(ganar)": p_win,
+        }))
+    table = pd.concat(sides, ignore_index=True).sort_values("diferencia proyectada", ascending=False)
+    return table.round({"pts proyectados": 1, "diferencia proyectada": 1, "diferencia mercado": 1,
+                        "edge vs mercado": 1, "P(ganar)": 3})
 
 
 def cmd_backtest(cfg: EngineConfig, args: argparse.Namespace) -> None:
@@ -175,9 +209,11 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="nba-quant")
     sub = parser.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("ingest")
-    p.add_argument("--start", required=True)
-    p.add_argument("--end", required=True)
+    p.add_argument("--start", help="por defecto: día siguiente al último partido del lake")
+    p.add_argument("--end", help="por defecto: ayer")
     p.add_argument("--with-injuries", action="store_true")
+    p.add_argument("--with-rosters", action="store_true")
+    p.add_argument("--season-types", type=int, nargs="+", default=[2, 3], help="1 pretemporada, 2 regular, 3 playoffs")
     for name in ("features", "simulate", "backtest", "calibrate"):
         q = sub.add_parser(name)
         q.add_argument("--seasons", type=int, nargs="*", default=None)
