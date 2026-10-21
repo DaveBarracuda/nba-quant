@@ -79,9 +79,9 @@ jobs:
           python -m nba_quant.cli simulate --date "$DATE" $BLEND | tee simulate.log
           echo "Tiempo de simulación: $(( $(date +%s) - start )) s"
           {
-            echo "## Diferencia de puntos proyectada por equipo — $DATE"
+            echo "## Proyección por partido — $DATE"
             echo '```'
-            sed -n '/DIFERENCIA DE PUNTOS PROYECTADA/,$p' simulate.log
+            sed -n '/PROYECCIÓN POR PARTIDO/,$p' simulate.log
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 

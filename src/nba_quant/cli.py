@@ -126,25 +126,48 @@ def cmd_simulate(cfg: EngineConfig, args: argparse.Namespace) -> None:
         lake.write("predictions", preds)
     report(projections, cfg.paths.root / "reports")
     if not preds.empty:
-        emit("\nDIFERENCIA DE PUNTOS PROYECTADA POR EQUIPO (descendente):\n"
-             + team_point_diff_table(preds).to_string(index=False))
+        emit("\nPROYECCIÓN POR PARTIDO (spread proyectado, descendente):\n" + render_matchup_table(preds))
 
 
-def team_point_diff_table(preds: pd.DataFrame) -> pd.DataFrame:
-    """Una fila por equipo: puntos y diferencial proyectados vs la línea del mercado, de mayor a menor."""
-    sides = []
-    for sign, team, rival, venue in ((1, "home_team", "away_team", "local"), (-1, "away_team", "home_team", "visita")):
-        margin = sign * preds["exp_margin"]
-        line = sign * pd.to_numeric(preds["market_spread_home"], errors="coerce")  # spread del equipo
-        p_win = preds["p_home_win_markov"] if sign == 1 else 1 - preds["p_home_win_markov"]
-        sides.append(pd.DataFrame({
-            "equipo": preds[team], "rival": preds[rival], "sede": venue,
-            "pts proyectados": (preds["exp_total"] + margin) / 2, "diferencia proyectada": margin,
-            "diferencia mercado": -line, "edge vs mercado": margin + line, "P(ganar)": p_win,
-        }))
-    table = pd.concat(sides, ignore_index=True).sort_values("diferencia proyectada", ascending=False)
-    return table.round({"pts proyectados": 1, "diferencia proyectada": 1, "diferencia mercado": 1,
-                        "edge vs mercado": 1, "P(ganar)": 3})
+# ESPN usa abreviaturas de 2 letras para algunos equipos; en la tabla se muestran las de 3.
+DISPLAY_ABBR = {"NY": "NYK", "SA": "SAS", "GS": "GSW", "NO": "NOP", "UTAH": "UTA", "WSH": "WAS"}
+TABLE_RULE = "═"
+
+
+def _vegas_line(home: str, away: str, spread_home: float) -> str:
+    if pd.isna(spread_home):
+        return "—"
+    if spread_home == 0:
+        return "PK"
+    return f"{home} {spread_home:+.1f}" if spread_home < 0 else f"{away} {-spread_home:+.1f}"
+
+
+def matchup_table(preds: pd.DataFrame) -> pd.DataFrame:
+    """Un renglón por partido: línea de Vegas, equipo que el modelo ve ganar, su P(ganar), spread y
+    marcador proyectados; ordenado por spread proyectado de mayor a menor."""
+    rows = []
+    for _, p in preds.iterrows():
+        home, away = DISPLAY_ABBR.get(p["home_team"], p["home_team"]), DISPLAY_ABBR.get(p["away_team"], p["away_team"])
+        margin, total = float(p["exp_margin"]), float(p["exp_total"])
+        home_pts, away_pts = (total + margin) / 2, (total - margin) / 2
+        pick_home = margin >= 0
+        rows.append({
+            "Matchup": f"{away} @ {home}",
+            "Vegas_Line": _vegas_line(home, away, pd.to_numeric(p["market_spread_home"], errors="coerce")),
+            "Model_Pick": home if pick_home else away,
+            "Win_Prob": f"{(p['p_home_win_markov'] if pick_home else 1 - p['p_home_win_markov']):.1%}",
+            "Proj_Spread": f"{home if pick_home else away} +{abs(margin):.1f} pts",
+            "Model_Score": f"{away} {away_pts:.1f} – {home} {home_pts:.1f}",
+            "Proj_Total": f"{total:.1f}",
+            "_sort": abs(margin),
+        })
+    return pd.DataFrame(rows).sort_values("_sort", ascending=False).drop(columns="_sort")
+
+
+def render_matchup_table(preds: pd.DataFrame) -> str:
+    body = matchup_table(preds).to_string(index=False)
+    rule = TABLE_RULE * max(len(line) for line in body.splitlines())
+    return "\n".join([rule, body, rule])
 
 
 def cmd_backtest(cfg: EngineConfig, args: argparse.Namespace) -> None:
