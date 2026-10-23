@@ -1,5 +1,7 @@
 # Ledger de picks del modelo
-_Actualizado: 2026-10-23 22:07 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea del NBA Odds Tracker en ese momento)._
+_Actualizado: 2026-10-23 22:56 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea del NBA Odds Tracker en ese momento)._
+
+Picks del workflow de GitHub *Ejecutar modelo* (líneas de ESPN): [github/LEDGER.md](github/LEDGER.md)
 
 **Mercado vs modelo:** ▲ *a favor* = la línea de cierre se movió hacia el número del modelo (CLV positivo); ▼ *en contra* = se alejó; umbral 0.25 pts en spread/total y 0.5 pp de probabilidad en ML. CLV en puntos (spread/total) o en pp de probabilidad sin vig (ML). Spread y total se califican contra la línea del pick a −110; ML al precio del pick.
 
@@ -23,6 +25,17 @@ _Actualizado: 2026-10-23 22:07 UTC · un pick por partido y mercado (primer snap
 | mercado × movimiento | total · a favor | 14 | 7 | 6-1-0 | 85.7% | +4.41 | +63.0% | +2.071 |
 | mercado × movimiento | total · en contra | 8 | 6 | 5-1-0 | 83.3% | +3.66 | +61.0% | -1.500 |
 | mercado × movimiento | total · sin movimiento | 6 | 3 | 2-1-0 | 66.7% | +0.84 | +27.8% | +0.000 |
+
+## CLV y movimiento del mercado hacia el modelo
+
+_% hacia el modelo = picks en que la línea se movió a favor ÷ picks con movimiento (sin contar "sin movimiento"); 50% es lo esperado por azar y `p (azar)` es la probabilidad de ver ese % o más si la línea se moviera al azar. CLV medio por pick con cierre conocido, con su intervalo de confianza del 95%: si el intervalo no incluye 0, el CLV es distinguible del azar._
+
+| Mercado | Con cierre | ▲ a favor | ▼ en contra | % hacia el modelo | p (azar) | CLV medio | IC 95% |
+|---|---|---|---|---|---|---|---|
+| Spread | 28 | 15 | 2 | 88.2% | 0.001 | +0.79 pts | [+0.22, +1.35] |
+| Total | 28 | 14 | 8 | 63.6% | 0.143 | +0.61 pts | [-0.04, +1.26] |
+| ML | 28 | 17 | 9 | 65.4% | 0.084 | +1.00 pp | [-0.41, +2.40] |
+| **Todos** | 84 | 46 | 19 | 70.8% | 0.001 | — | — |
 
 ## Picks
 

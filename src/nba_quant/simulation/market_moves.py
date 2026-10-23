@@ -198,6 +198,37 @@ def summarize(picks: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(out)
 
 
+CLV_UNITS = {"spread": ("pts", 1.0), "total": ("pts", 1.0), "ml": ("pp", 100.0)}
+
+
+def clv_summary(picks: pd.DataFrame) -> pd.DataFrame:
+    """CLV medio por mercado (IC 95%) y % de picks con movimiento en que la línea fue hacia el modelo.
+
+    Sólo cuentan los picks con cierre conocido; `p (azar)` = P(≥ ese % a favor | movimiento 50/50)."""
+    from scipy.stats import binomtest
+
+    if picks.empty:
+        return pd.DataFrame()
+    known = picks[picks["move_category"] != "pendiente"]
+    rows = []
+    for mk in (*MARKET_ORDER, "todos"):
+        d = known if mk == "todos" else known[known["market"] == mk]
+        fav, against = int((d["move_category"] == "a favor").sum()), int((d["move_category"] == "en contra").sum())
+        moved = fav + against
+        row = {"mercado": mk, "con cierre": len(d), "a favor": fav, "en contra": against,
+               "% hacia el modelo": fav / moved if moved else np.nan,
+               "p (azar)": binomtest(fav, moved, 0.5, alternative="greater").pvalue if moved else np.nan,
+               "unidad": "", "CLV medio": np.nan, "IC 95% bajo": np.nan, "IC 95% alto": np.nan}
+        if mk != "todos" and len(d):  # "todos" mezcla puntos y probabilidad: sin CLV agregado
+            unit, scale = CLV_UNITS[mk]
+            clv = d["clv"].astype(float).dropna() * scale
+            half = 1.96 * clv.std(ddof=1) / np.sqrt(len(clv)) if len(clv) > 1 else np.nan
+            row.update({"unidad": unit, "CLV medio": clv.mean(), "IC 95% bajo": clv.mean() - half,
+                        "IC 95% alto": clv.mean() + half})
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+
 def model_vs_market_drift(snapshots: pd.DataFrame) -> pd.DataFrame:
     """Entre el primer y el último snapshot de cada partido: cuánto se movió el número del modelo
     y cuánto la línea, y si la brecha entre ambos se cerró (convergen) o se abrió (divergen)."""

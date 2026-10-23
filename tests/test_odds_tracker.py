@@ -117,6 +117,9 @@ def test_ledger_shows_moves_and_results(tracker_db, tmp_path) -> None:
     assert "| GENERAL | todos | 3 | 3 | 3-0-0 | 100.0% |" in text
     assert "| 2026-10-21 | CHA @ BKN | Spread | BKN -3.5 | -3.5 | -5.5 | ▲ a favor | +2.00 | STEAM | 70 | ✅ W |" in text
     assert len(pd.read_csv(tmp_path / "ledger" / "picks.csv")) == 3
+    assert "## CLV y movimiento del mercado hacia el modelo" in text
+    assert "| Spread | 1 | 1 | 0 | 100.0% | 0.500 | +2.00 pts | — |" in text
+    assert "| **Todos** | 3 | 3 | 0 | 100.0% | 0.125 | — | — |" in text
     away, _ = _snap(tracker_db, -2.0, 226.0, 0.40)  # pick visitante: líneas desde su lado
     rows = ledger_rows(pick_table(away, r.lines(), FINAL)).set_index("Mercado")
     assert rows.loc["Spread", ["Pick", "Línea pick", "Cierre", "Mercado vs modelo"]].tolist() == [

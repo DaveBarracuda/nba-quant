@@ -1,5 +1,5 @@
 # Ledger de picks — workflow de GitHub
-_Actualizado: 2026-10-23 22:22 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea de ESPN (la casa que muestra ESPN) en ese momento)._
+_Actualizado: 2026-10-23 22:56 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea de ESPN (la casa que muestra ESPN) en ese momento)._
 
 Generado por el workflow *Ejecutar modelo* (modelo sin mezcla). El cierre y el movimiento a favor / en contra se toman de ESPN al liquidar. Ledger con el NBA Odds Tracker: [../LEDGER.md](../LEDGER.md)
 
@@ -17,6 +17,17 @@ Generado por el workflow *Ejecutar modelo* (modelo sin mezcla). El cierre y el m
 | mercado × movimiento | ml · pendiente | 11 | 0 | 0-0-0 | — | +0.00 | — | — |
 | mercado × movimiento | spread · pendiente | 11 | 0 | 0-0-0 | — | +0.00 | — | — |
 | mercado × movimiento | total · pendiente | 11 | 0 | 0-0-0 | — | +0.00 | — | — |
+
+## CLV y movimiento del mercado hacia el modelo
+
+_% hacia el modelo = picks en que la línea se movió a favor ÷ picks con movimiento (sin contar "sin movimiento"); 50% es lo esperado por azar y `p (azar)` es la probabilidad de ver ese % o más si la línea se moviera al azar. CLV medio por pick con cierre conocido, con su intervalo de confianza del 95%: si el intervalo no incluye 0, el CLV es distinguible del azar._
+
+| Mercado | Con cierre | ▲ a favor | ▼ en contra | % hacia el modelo | p (azar) | CLV medio | IC 95% |
+|---|---|---|---|---|---|---|---|
+| Spread | 0 | 0 | 0 | — | — | — | — |
+| Total | 0 | 0 | 0 | — | — | — | — |
+| ML | 0 | 0 | 0 | — | — | — | — |
+| **Todos** | 0 | 0 | 0 | — | — | — | — |
 
 ## Picks
 

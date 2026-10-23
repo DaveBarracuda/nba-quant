@@ -11,6 +11,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from nba_quant.simulation.market_moves import clv_summary
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_LEDGER_DIR = PROJECT_ROOT / "ledger"
 US_DATE_SHIFT = pd.Timedelta(hours=6)
@@ -85,6 +87,29 @@ def summary_table(summary: pd.DataFrame) -> pd.DataFrame:
     })
 
 
+CLV_NOTE = ("_% hacia el modelo = picks en que la línea se movió a favor ÷ picks con movimiento (sin contar "
+            "\"sin movimiento\"); 50% es lo esperado por azar y `p (azar)` es la probabilidad de ver ese % o más "
+            "si la línea se moviera al azar. CLV medio por pick con cierre conocido, con su intervalo de confianza "
+            "del 95%: si el intervalo no incluye 0, el CLV es distinguible del azar._")
+
+
+def clv_table(official: pd.DataFrame) -> pd.DataFrame:
+    """CLV medio por mercado (IC 95%) y % de picks en que el mercado se movió hacia el modelo."""
+    c = clv_summary(official)
+    if c.empty:
+        return c
+    ci = [f"[{lo:+.2f}, {hi:+.2f}]" if pd.notna(lo) and pd.notna(hi) else "—"
+          for lo, hi in zip(c["IC 95% bajo"], c["IC 95% alto"])]
+    return pd.DataFrame({
+        "Mercado": c["mercado"].map({**MARKET_NAMES, "todos": "**Todos**"}),
+        "Con cierre": c["con cierre"], "▲ a favor": c["a favor"], "▼ en contra": c["en contra"],
+        "% hacia el modelo": [_fmt(v, ".1%") for v in c["% hacia el modelo"]],
+        "p (azar)": [_fmt(v, ".3f") for v in c["p (azar)"]],
+        "CLV medio": [f"{v:+.2f} {u}" if pd.notna(v) else "—" for v, u in zip(c["CLV medio"], c["unidad"])],
+        "IC 95%": ci,
+    })
+
+
 LOCAL_NOTE = ("Picks del workflow de GitHub *Ejecutar modelo* (líneas de ESPN): "
               "[github/LEDGER.md](github/LEDGER.md)")
 
@@ -107,6 +132,12 @@ def render_ledger(official: pd.DataFrame, summary: pd.DataFrame, generated_at: p
         "## Récord",
         "",
         _markdown(summary_table(summary)) if not summary.empty else "_Sin picks todavía._",
+        "",
+        "## CLV y movimiento del mercado hacia el modelo",
+        "",
+        CLV_NOTE,
+        "",
+        _markdown(clv) if not (clv := clv_table(official)).empty else "_Sin picks con cierre todavía._",
         "",
         "## Picks",
         "",
