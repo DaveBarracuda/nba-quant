@@ -1,0 +1,13 @@
+grupo,valor,picks,calificados,récord,WR,unidades,ROI,CLV medio,% a favor
+GENERAL,todos,33,0,0-0-0,,0.0,,,0.0
+mercado,ml,11,0,0-0-0,,0.0,,,0.0
+mercado,spread,11,0,0-0-0,,0.0,,,0.0
+mercado,total,11,0,0-0-0,,0.0,,,0.0
+movimiento,pendiente,33,0,0-0-0,,0.0,,,0.0
+mercado × movimiento,ml · pendiente,11,0,0-0-0,,0.0,,,0.0
+mercado × movimiento,spread · pendiente,11,0,0-0-0,,0.0,,,0.0
+mercado × movimiento,total · pendiente,11,0,0-0-0,,0.0,,,0.0
+alertas tracker,con STEAM/RLM/INFO/GRADUAL,0,0,0-0-0,,0.0,,,
+alertas tracker,sin alerta,33,0,0-0-0,,0.0,,,0.0
+público,modelo con el público (≥60% tickets),0,0,0-0-0,,0.0,,,
+público,modelo contra el público (≤40% tickets),0,0,0-0-0,,0.0,,,
