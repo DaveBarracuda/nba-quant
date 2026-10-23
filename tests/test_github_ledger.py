@@ -29,6 +29,8 @@ def test_records_first_pick_per_market_against_espn_line(tmp_path) -> None:
     assert picks.loc["spread", "pick"] == "BKN -3.5" and picks.loc["total", "pick"] == "Under 220.5"
     assert picks.loc["ml", "pick"] == "BKN ML" and picks.loc["ml", "line_pick"] == pytest.approx(no_vig_home(-160, 135))
     assert set(picks["move_category"]) == {"pendiente"} and picks["result"].isna().all()
+    started = build_espn_snapshots(PREDS, _upcoming(-1.5, 230.5), pd.Timestamp("2026-10-21T23:45Z"), "test")
+    assert started.empty  # partido ya iniciado: no se registra con la línea en vivo
     again = _record(tmp_path, -6.5, 216.5, "2026-10-21T20:00Z").set_index("market")  # 2ª corrida: no reemplaza
     assert again.loc["spread", "pick"] == "BKN -3.5" and len(again) == 3
     text = (tmp_path / "LEDGER.md").read_text(encoding="utf-8")

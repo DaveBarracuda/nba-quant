@@ -59,6 +59,8 @@ def build_espn_snapshots(preds: pd.DataFrame, upcoming: pd.DataFrame, snapshot_t
         if p.game_id not in sched.index:
             continue
         g = sched.loc[p.game_id]
+        if pd.Timestamp(g["start_utc"]) <= snapshot_ts:  # ya empezó: la línea de ESPN sería en vivo
+            continue
         rows.append({
             "game_id": p.game_id, "snapshot_ts": snapshot_ts.isoformat(), "event_id": p.game_id,
             "commence_time": pd.Timestamp(g["start_utc"]).isoformat(), "home_team": p.home_team,
