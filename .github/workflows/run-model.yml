@@ -1,5 +1,6 @@
-# Ejecuta el modelo a demanda: proyecta los partidos de una fecha e imprime en el log la diferencia
-# de puntos proyectada de cada equipo (descendente) vs la línea del mercado.
+# Ejecuta el modelo a demanda: proyecta los partidos de una fecha, imprime en el log la tabla por
+# partido vs la línea del mercado y guarda los picks (modelo sin mezcla vs línea actual de ESPN) en
+# ledger/github/. Con "blend" sólo se imprime: el ledger registra el modelo sin mezcla.
 # El lake se construye desde ESPN y se guarda en la caché de Actions: la primera corrida descarga
 # 2024-25 → hoy (lenta); las siguientes sólo los partidos nuevos.
 name: Ejecutar modelo
@@ -17,10 +18,10 @@ on:
         default: false
 
 permissions:
-  contents: read
+  contents: write  # guarda los picks en ledger/github/
 
 concurrency:
-  group: run-model
+  group: ledger  # misma cola que "Liquidar ledger": nunca escriben el ledger a la vez
   cancel-in-progress: false
 
 env:
@@ -76,7 +77,7 @@ jobs:
           DATE="${INPUT_DATE:-$(TZ=America/New_York date +%F)}"
           echo "Partidos del $DATE"
           start=$(date +%s)
-          python -m nba_quant.cli simulate --date "$DATE" $BLEND | tee simulate.log
+          python -m nba_quant.cli simulate --date "$DATE" $BLEND --record-picks | tee simulate.log
           echo "Tiempo de simulación: $(( $(date +%s) - start )) s"
           {
             echo "## Proyección por partido — $DATE"
@@ -84,6 +85,19 @@ jobs:
             sed -n '/PROYECCIÓN POR PARTIDO/,$p' simulate.log
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Guardar picks en el ledger
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ledger/github/
+          if git diff --cached --quiet; then
+            echo "Sin picks nuevos para el ledger"
+            exit 0
+          fi
+          git commit -m "chore(ledger): picks del workflow $(date -u +%F)"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
 
       - name: Subir tear sheets
         if: always()

@@ -20,14 +20,14 @@ from pathlib import Path
 
 import pandas as pd
 
-from nba_quant import tracker_jobs
+from nba_quant import github_ledger, tracker_jobs
 from nba_quant.config import DEFAULT_CONFIG, EngineConfig
 from nba_quant.features.pipeline import NBAAdvancedFeaturePipeline
 from nba_quant.ingestion.engine import DataIngestionLayer
 from nba_quant.integrations.odds_tracker import DEFAULT_TRACKER_DB
 from nba_quant.logging_utils import get_logger
 from nba_quant.settle import run_settle
-from nba_quant.simulation.slate import SlateSimulator
+from nba_quant.simulation.slate import MODEL_VERSION, SlateSimulator
 from nba_quant.storage.lake import DataLake
 
 log = get_logger("cli")
@@ -125,8 +125,24 @@ def cmd_simulate(cfg: EngineConfig, args: argparse.Namespace) -> None:
     if not preds.empty:
         lake.write("predictions", preds)
     report(projections, cfg.paths.root / "reports")
+    if args.record_picks and not preds.empty:
+        record_github_picks(preds, upcoming, args.blend)
     if not preds.empty:
         emit("\nPROYECCIÓN POR PARTIDO (spread proyectado, descendente):\n" + render_matchup_table(preds))
+
+
+def record_github_picks(preds: pd.DataFrame, upcoming: pd.DataFrame, blended: bool) -> None:
+    """Guarda en ledger/github/ los picks del modelo sin mezcla contra la línea actual de ESPN."""
+    if blended:  # con --blend la P(local) ya está mezclada con el mercado: no es el pick del modelo
+        emit("Picks no guardados: la corrida usó --blend (el ledger registra el modelo sin mezcla)")
+        return
+    if upcoming.empty:
+        emit("Picks no guardados: sólo se registran partidos futuros (--date)")
+        return
+    snaps = github_ledger.build_espn_snapshots(preds, upcoming, pd.Timestamp.now(tz="UTC"), MODEL_VERSION)
+    picks = github_ledger.record_picks(snaps)
+    emit(f"Ledger de GitHub: {len(snaps) * 3} picks evaluados, {len(picks)} en el ledger "
+         f"({github_ledger.GITHUB_LEDGER_DIR / 'LEDGER.md'})")
 
 
 # ESPN usa abreviaturas de 2 letras para algunos equipos; en la tabla se muestran las de 3.
@@ -245,6 +261,8 @@ def main(argv: list[str] | None = None) -> None:
             q.add_argument("--game-ids", nargs="*")
             q.add_argument("--blend", action="store_true",
                            help="mezclar modelo y línea de cierre (ajusta con un backtest previo, ~5 min)")
+            q.add_argument("--record-picks", action="store_true",
+                           help="guardar los picks en ledger/github/ (línea actual de ESPN)")
         if name in ("backtest", "calibrate"):
             q.add_argument("--min-games", type=int, default=10)
         if name == "backtest":

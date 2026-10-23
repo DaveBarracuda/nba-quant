@@ -85,13 +85,20 @@ def summary_table(summary: pd.DataFrame) -> pd.DataFrame:
     })
 
 
-def render_ledger(official: pd.DataFrame, summary: pd.DataFrame, generated_at: pd.Timestamp) -> str:
+LOCAL_NOTE = ("Picks del workflow de GitHub *Ejecutar modelo* (líneas de ESPN): "
+              "[github/LEDGER.md](github/LEDGER.md)")
+
+
+def render_ledger(official: pd.DataFrame, summary: pd.DataFrame, generated_at: pd.Timestamp,
+                  title: str = "Ledger de picks del modelo", source: str = "del NBA Odds Tracker",
+                  note: str = LOCAL_NOTE) -> str:
     rows = ledger_rows(official)
     parts = [
-        "# Ledger de picks del modelo",
+        f"# {title}",
         f"_Actualizado: {generated_at:%Y-%m-%d %H:%M} UTC · un pick por partido y mercado (primer snapshot "
-        "del modelo, con la línea del NBA Odds Tracker en ese momento)._",
+        f"del modelo, con la línea {source} en ese momento)._",
         "",
+        *([note, ""] if note else []),
         "**Mercado vs modelo:** ▲ *a favor* = la línea de cierre se movió hacia el número del modelo "
         "(CLV positivo); ▼ *en contra* = se alejó; umbral 0.25 pts en spread/total y 0.5 pp de "
         "probabilidad en ML. CLV en puntos (spread/total) o en pp de probabilidad sin vig (ML). "
@@ -109,11 +116,11 @@ def render_ledger(official: pd.DataFrame, summary: pd.DataFrame, generated_at: p
 
 
 def write_ledger(official: pd.DataFrame, summary: pd.DataFrame, out_dir: Path = DEFAULT_LEDGER_DIR,
-                 generated_at: pd.Timestamp | None = None) -> Path:
+                 generated_at: pd.Timestamp | None = None, **render_kwargs: str) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     now = generated_at if generated_at is not None else pd.Timestamp.now(tz="UTC")
     path = out_dir / "LEDGER.md"
-    path.write_text(render_ledger(official, summary, now), encoding="utf-8")
+    path.write_text(render_ledger(official, summary, now, **render_kwargs), encoding="utf-8")
     official.to_csv(out_dir / "picks.csv", index=False)
     summary.to_csv(out_dir / "summary.csv", index=False)
     return path
