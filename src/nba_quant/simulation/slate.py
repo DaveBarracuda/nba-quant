@@ -43,6 +43,8 @@ class GameProjection:
     tear_sheet: str
     props: pd.DataFrame
     edges: list = field(default_factory=list)  # EdgeResult por mercado (ML, spread, total)
+    # Markov exacto a la línea de mercado: {"spread": (P local cubre, P push), "total": (P over, P push)}
+    market_probs: dict = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -437,7 +439,12 @@ class SlateSimulator:
             parts = [core.simulate_props(nn, t, is_home, pl) for t, is_home in ((ph.team, True), (pa.team, False))
                      if not (pl := self._props_players(t, date)).empty]
             props = pd.concat(parts, ignore_index=True) if parts else props
-        return GameProjection(row, sheet, props, edges)
+        market_probs = {}
+        if spread_home is not None:
+            market_probs["spread"] = exact.cover_prob(spread_home)
+        if market_total is not None:
+            market_probs["total"] = exact.over_prob(market_total)
+        return GameProjection(row, sheet, props, edges, market_probs)
 
     # ------------------------------------------------------------------ mezcla con mercado
     def fit_blender(self, predictions: pd.DataFrame | None = None, min_games_played: int = 10) -> MarketBlender:

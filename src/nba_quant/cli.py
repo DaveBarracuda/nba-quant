@@ -20,12 +20,13 @@ from pathlib import Path
 
 import pandas as pd
 
-from nba_quant import github_ledger, tracker_jobs
+from nba_quant import github_ledger, market_report, tracker_jobs
 from nba_quant.config import DEFAULT_CONFIG, EngineConfig
 from nba_quant.features.pipeline import NBAAdvancedFeaturePipeline
 from nba_quant.ingestion.engine import DataIngestionLayer
 from nba_quant.integrations.odds_tracker import DEFAULT_TRACKER_DB
 from nba_quant.logging_utils import get_logger
+from nba_quant.market_report import DISPLAY_ABBR
 from nba_quant.settle import run_settle
 from nba_quant.simulation.slate import MODEL_VERSION, SlateSimulator
 from nba_quant.storage.lake import DataLake
@@ -127,8 +128,20 @@ def cmd_simulate(cfg: EngineConfig, args: argparse.Namespace) -> None:
     report(projections, cfg.paths.root / "reports")
     if args.record_picks and not preds.empty:
         record_github_picks(preds, upcoming, args.blend)
-    if not preds.empty:
+    if not preds.empty and not args.blend and not upcoming.empty:
+        market_vs_model(preds, projections, upcoming, args.date, cfg.paths.root / "reports")
+    if not preds.empty:  # al final: el workflow copia desde aquí la tabla al resumen de la corrida
         emit("\nPROYECCIÓN POR PARTIDO (spread proyectado, descendente):\n" + render_matchup_table(preds))
+
+
+def market_vs_model(preds: pd.DataFrame, projections: list, upcoming: pd.DataFrame, day: str,
+                    out_dir: Path) -> None:
+    """Imprime el análisis modelo vs mercado (ESPN) y lo deja en Markdown para el resumen del workflow."""
+    report_df = market_report.build_report(preds, projections, upcoming)
+    emit("\nMODELO VS MERCADO (líneas de ESPN, modelo sin mezcla):\n" + market_report.render_text(report_df))
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / f"market_vs_model_{day}.md").write_text(market_report.render_markdown(report_df, day),
+                                                       encoding="utf-8")
 
 
 def record_github_picks(preds: pd.DataFrame, upcoming: pd.DataFrame, blended: bool) -> None:
@@ -145,8 +158,6 @@ def record_github_picks(preds: pd.DataFrame, upcoming: pd.DataFrame, blended: bo
          f"({github_ledger.GITHUB_LEDGER_DIR / 'LEDGER.md'})")
 
 
-# ESPN usa abreviaturas de 2 letras para algunos equipos; en la tabla se muestran las de 3.
-DISPLAY_ABBR = {"NY": "NYK", "SA": "SAS", "GS": "GSW", "NO": "NOP", "UTAH": "UTA", "WSH": "WAS"}
 TABLE_RULE = "═"
 
 

@@ -84,6 +84,8 @@ jobs:
             echo '```'
             sed -n '/PROYECCIÓN POR PARTIDO/,$p' simulate.log
             echo '```'
+            MD="data/reports/market_vs_model_${DATE}.md"  # picks por movimiento del mercado (ESPN)
+            if [ -f "$MD" ]; then cat "$MD"; fi
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Guardar picks en el ledger
