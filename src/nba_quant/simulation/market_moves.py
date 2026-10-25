@@ -111,7 +111,9 @@ def _public_on_pick(splits: pd.DataFrame | None, s: pd.Series, mk: str, side_a: 
     if splits is None or splits.empty:
         return np.nan
     d = splits[(splits["home_team"] == s["home_team"]) & (splits["away_team"] == s["away_team"])
-               & (splits["market"] == mk) & (splits["ts"] < commence)]
+               & (splits["market"] == mk) & (splits["ts"] < commence)
+               # 0% tickets y 0% dinero = Action Network aún sin splits para el partido (no es un dato)
+               & ~((splits["tickets_pct"] == 0) & (splits["money_pct"] == 0))]
     if d.empty:
         return np.nan
     pct = float(d.sort_values("ts").iloc[-1]["tickets_pct"])

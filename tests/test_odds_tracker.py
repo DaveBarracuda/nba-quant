@@ -18,8 +18,8 @@ from nba_quant.market_report import build_report
 from nba_quant.publish import publish_ledger
 from nba_quant.settle import settle_picks
 from nba_quant.integrations.odds_tracker import OddsTrackerReader, closing_line, match_games
-from nba_quant.simulation.market_moves import (build_snapshots, first_snapshot_picks, model_vs_market_drift,
-                                               pick_table, summarize)
+from nba_quant.simulation.market_moves import (_public_on_pick, build_snapshots, first_snapshot_picks,
+                                               model_vs_market_drift, pick_table, summarize)
 
 SCHEMA = """
 CREATE TABLE quotes (run_ts TEXT, event_id TEXT, commence_time TEXT, home TEXT, away TEXT,
@@ -219,6 +219,15 @@ def test_publish_ledger_commits_only_ledger_and_pushes(tmp_path) -> None:
     assert _run(remote, "show", "main:ledger/LEDGER.md") == "v2"
     assert len(_run(remote, "log", "--format=%s", "main").split("\n")) == 4  # 3 commits + línea vacía
     assert publish_ledger(tmp_path / "nogit", tmp_path / "nogit" / "ledger").startswith("error")
+
+
+def test_public_split_placeholders_are_ignored(tracker_db) -> None:
+    splits = OddsTrackerReader(tracker_db).splits()
+    empty = splits.assign(ts=pd.Timestamp("2026-10-21T21:00Z"), tickets_pct=0.0, money_pct=0.0)  # sin splits aún
+    both = pd.concat([splits, empty], ignore_index=True)
+    s = {"home_team": "BKN", "away_team": "CHA"}
+    assert _public_on_pick(both, s, "spread", True, pd.Timestamp(TIP)) == 70.0
+    assert np.isnan(_public_on_pick(empty, s, "spread", False, pd.Timestamp(TIP)))
 
 
 def test_reader_fails_clearly_without_db(tmp_path) -> None:
