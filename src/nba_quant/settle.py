@@ -23,7 +23,9 @@ from nba_quant.ingestion.espn import CORE_ODDS_URL, SUMMARY_URL, parse_core_odds
 from nba_quant.ingestion.http import HttpError, SyncHttpClient
 from nba_quant.ledger import DEFAULT_LEDGER_DIR, write_ledger
 from nba_quant.logging_utils import get_logger
-from nba_quant.simulation.market_moves import MOVE_EPS, _grade, _market_move, _profit, summarize
+from nba_quant.integrations.odds_tracker import TrackerData, closing_line, load_tracker
+from nba_quant.simulation.market_moves import (MOVE_EPS, _alert_kinds, _grade, _market_move, _profit,
+                                               _public_on_pick, summarize)
 from nba_quant.teams import normalize_abbr
 
 log = get_logger("settle")
@@ -76,14 +78,37 @@ def _apply_close(out: pd.DataFrame, i: int, mk: str, side_a: bool, close: float)
     out.at[i, "move_category"] = "a favor" if clv > eps else "en contra" if clv < -eps else "sin movimiento"
 
 
+def _from_tracker(row: pd.Series) -> bool:
+    return str(row.get("line_source", "")) == "tracker"
+
+
+def _apply_tracker(out: pd.DataFrame, i: int, mk: str, side_a: bool, tracker: TrackerData) -> None:
+    """Pick tomado con la línea del tracker: cierre = última línea del tracker antes del salto,
+    más las alertas y el % del público hasta el salto (como en el ledger local)."""
+    row = out.loc[i]
+    commence, snap_ts = pd.Timestamp(row["commence_time"]), pd.Timestamp(row["snapshot_ts"])
+    event_id = str(row["event_id"])
+    close = closing_line(tracker.lines, event_id, mk, commence)
+    if close is not None and pd.Timestamp(close["ts"]) > snap_ts:
+        _apply_close(out, i, mk, side_a, float(close["value"]))
+    away, home = str(row["matchup"]).split(" @ ")
+    out.at[i, "alert_kinds"] = _alert_kinds(tracker.alerts, event_id, mk, snap_ts, commence)
+    out.at[i, "public_pct_on_pick"] = _public_on_pick(tracker.splits, {"home_team": home, "away_team": away},
+                                                      mk, side_a, commence)
+
+
 def settle_picks(picks: pd.DataFrame, fetch_score: Callable[[str], FinalScore | None],
                  now: pd.Timestamp,
-                 fetch_close: Callable[[str], CloseLines] | None = None) -> tuple[pd.DataFrame, int]:
-    """Devuelve (picks con resultado y unidades, número de picks liquidados ahora). Con
-    `fetch_close`, los picks sin cierre ("pendiente") reciben además el cierre y el movimiento."""
+                 fetch_close: Callable[[str], CloseLines] | None = None,
+                 tracker: TrackerData | None = None) -> tuple[pd.DataFrame, int]:
+    """Devuelve (picks con resultado y unidades, número de picks liquidados ahora). Los picks sin
+    cierre ("pendiente") reciben además el cierre y el movimiento: del tracker si se tomaron con su
+    línea (`tracker`), o de ESPN (`fetch_close`)."""
     out = picks.copy()
-    out["move_category"] = out["move_category"].astype(object)
-    for col in ("line_close", "clv", "gap_closed", "result", "units"):
+    for col, default in (("move_category", "pendiente"), ("alert_kinds", ""), ("line_source", "espn"),
+                         ("event_id", "")):
+        out[col] = (out[col] if col in out else pd.Series(default, index=out.index)).astype(object)
+    for col in ("line_close", "clv", "gap_closed", "result", "units", "public_pct_on_pick"):
         out[col] = out[col].astype(float)
     commence = pd.to_datetime(out["commence_time"], utc=True)
     due = out["result"].isna() & (commence < now - RESULTS_GRACE)
@@ -105,8 +130,11 @@ def settle_picks(picks: pd.DataFrame, fetch_score: Callable[[str], FinalScore | 
         home, away = score
         mk = out.at[i, "market"]
         side_a = _pick_is_side_a(mk, out.at[i, "pick"], out.at[i, "matchup"])
-        if out.at[i, "move_category"] == "pendiente" and mk in closes.get(gid, {}):
-            _apply_close(out, i, mk, side_a, closes[gid][mk])
+        if out.at[i, "move_category"] == "pendiente":
+            if tracker is not None and _from_tracker(out.loc[i]):
+                _apply_tracker(out, i, mk, side_a, tracker)
+            elif not _from_tracker(out.loc[i]) and mk in closes.get(gid, {}):
+                _apply_close(out, i, mk, side_a, closes[gid][mk])
         result = _grade(mk, side_a, float(out.at[i, "line_pick"]), float(home - away), float(home + away))
         out.at[i, "result"] = result
         out.at[i, "units"] = _profit(result, float(out.at[i, "price"]))
@@ -115,7 +143,7 @@ def settle_picks(picks: pd.DataFrame, fetch_score: Callable[[str], FinalScore | 
 
 
 def _settle_dir(client: SyncHttpClient, ledger_dir: Path, with_close: bool,
-                render: dict[str, str]) -> int:
+                render: dict[str, str], tracker: TrackerData | None = None) -> int:
     path = ledger_dir / "picks.csv"
     if not path.exists():
         log.info("No existe %s: aún no hay picks publicados", path)
@@ -131,7 +159,8 @@ def _settle_dir(client: SyncHttpClient, ledger_dir: Path, with_close: bool,
         return summaries[gid]
 
     settled, n = settle_picks(picks, lambda gid: score_from_summary(summary(gid)), pd.Timestamp.now(tz="UTC"),
-                              (lambda gid: espn_closing_lines(client, gid, summary(gid))) if with_close else None)
+                              (lambda gid: espn_closing_lines(client, gid, summary(gid))) if with_close else None,
+                              tracker)
     if n:  # sin liquidaciones no se reescribe nada: evita commits vacíos de sólo fecha/formato
         write_ledger(settled, summarize(settled), ledger_dir, **render)
     return n
@@ -141,4 +170,4 @@ def run_settle(ledger_dir: Path = DEFAULT_LEDGER_DIR, github_dir: Path = GITHUB_
     """Liquida el ledger del tracker y el de GitHub; devuelve el total de picks liquidados."""
     client = SyncHttpClient(DEFAULT_CONFIG.http, ESPN_MIN_INTERVAL_S)
     return (_settle_dir(client, ledger_dir, with_close=False, render={})
-            + _settle_dir(client, github_dir, with_close=True, render=GITHUB_RENDER))
+            + _settle_dir(client, github_dir, with_close=True, render=GITHUB_RENDER, tracker=load_tracker()))

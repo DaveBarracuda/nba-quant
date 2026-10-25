@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -26,6 +27,9 @@ from nba_quant.logging_utils import get_logger
 log = get_logger("odds_tracker")
 
 DEFAULT_TRACKER_DB = Path(os.environ.get("NBA_ODDS_TRACKER_DB", r"C:\NBA Odds tracker\data\odds.sqlite3"))
+# El tracker corre en GitHub Actions y publica la base en la rama `data` de su repo (público);
+# los workflows de este repo la descargan de aquí y la exponen con NBA_ODDS_TRACKER_DB.
+TRACKER_DATA_URL = "https://raw.githubusercontent.com/DaveBarracuda/nba-odds-tracker/data/odds.sqlite3"
 US_DATE_OFFSET = pd.Timedelta(hours=-6)  # UTC -> fecha del partido en EE.UU. (tips 12:00 ET - 22:30 PT)
 MARKETS = {"spreads": "spread", "totals": "total", "h2h": "ml"}
 TEAM_ALIASES = {"LA Clippers": "Los Angeles Clippers"}
@@ -109,6 +113,26 @@ class OddsTrackerReader:
         s["home_team"], s["away_team"] = s["home"].map(_abbr), s["away"].map(_abbr)
         s["market"] = s["market"].map(MARKETS)
         return s
+
+
+@dataclass(frozen=True)
+class TrackerData:
+    """Todo lo que el modelo usa del tracker, leído una sola vez."""
+
+    events: pd.DataFrame
+    lines: pd.DataFrame
+    alerts: pd.DataFrame
+    splits: pd.DataFrame
+
+
+def load_tracker(db_path: Path = DEFAULT_TRACKER_DB) -> TrackerData | None:
+    """Base del tracker o None si no está disponible (los llamadores caen a las líneas de ESPN)."""
+    try:
+        r = OddsTrackerReader(db_path)
+    except FileNotFoundError as exc:
+        log.warning("%s: se usan las líneas de ESPN", exc)
+        return None
+    return TrackerData(r.events(), r.lines(), r.alerts(), r.splits())
 
 
 def match_games(events: pd.DataFrame, games: pd.DataFrame) -> pd.DataFrame:

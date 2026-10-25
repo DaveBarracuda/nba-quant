@@ -149,6 +149,7 @@ def pick_table(snapshots: pd.DataFrame, lines: pd.DataFrame, results: pd.DataFra
                 "alert_kinds": _alert_kinds(alerts, s["event_id"], mk, snap_ts, commence),
                 "public_pct_on_pick": _public_on_pick(splits, s, mk, side_a, commence),
                 "result": np.nan, "units": np.nan,
+                "event_id": s["event_id"], "line_source": s.get("line_source", "tracker"),
             }
             if s["game_id"] in res.index:
                 r = res.loc[s["game_id"]]

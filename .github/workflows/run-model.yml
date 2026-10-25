@@ -46,6 +46,20 @@ jobs:
       - name: Instalar
         run: pip install -e . -c constraints.txt
 
+      - name: Base del NBA Odds Tracker
+        # rama `data` del repo del tracker (corre en Actions); sin ella se usan las líneas de ESPN
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p data/tracker
+          url="https://api.github.com/repos/DaveBarracuda/nba-odds-tracker/contents/odds.sqlite3?ref=data"
+          if curl -fsSL --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github.raw" -o data/tracker/odds.sqlite3 "$url"; then
+            echo "NBA_ODDS_TRACKER_DB=$PWD/data/tracker/odds.sqlite3" >> "$GITHUB_ENV"
+            ls -l data/tracker/odds.sqlite3
+          else
+            echo "::warning::No se pudo descargar la base del tracker; se usan las líneas de ESPN"
+          fi
+
       - name: Restaurar lake
         id: lake
         uses: actions/cache/restore@v4

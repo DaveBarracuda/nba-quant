@@ -4,12 +4,17 @@ from __future__ import annotations
 
 import sqlite3
 import subprocess
+from dataclasses import replace
+from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
 import pytest
 
+from nba_quant.github_ledger import build_espn_snapshots, record_picks
+from nba_quant.integrations.odds_tracker import load_tracker
 from nba_quant.ledger import ledger_rows, write_ledger
+from nba_quant.market_report import build_report
 from nba_quant.publish import publish_ledger
 from nba_quant.settle import settle_picks
 from nba_quant.integrations.odds_tracker import OddsTrackerReader, closing_line, match_games
@@ -142,6 +147,44 @@ def test_settle_grades_pending_picks_from_ledger_csv(tracker_db, tmp_path) -> No
     pd.testing.assert_frame_equal(settled.set_index("market")[["result", "units"]], expected, check_dtype=False)
     early, n_early = settle_picks(csv, finals.get, pd.Timestamp("2026-10-22T01:00:00Z"))  # < 4 h tras el salto
     assert n_early == 0 and early["result"].isna().all()
+
+
+GH_PREDS = pd.DataFrame({"game_id": ["G1"], "home_team": ["BKN"], "away_team": ["CHA"], "model_margin_raw": [7.0],
+                         "model_total_raw": [215.0], "p_home_win_markov": [0.70], "exp_margin": [7.0],
+                         "exp_total": [215.0]})
+GH_UPCOMING = pd.DataFrame({"game_id": ["G1"], "game_date": [pd.Timestamp("2026-10-21")], "home_team": ["BKN"],
+                            "away_team": ["CHA"], "start_utc": [TIP], "spread_open": [-1.0], "spread_close": [-1.5],
+                            "spread_home_odds_close": [-110], "spread_away_odds_close": [-110],
+                            "total_close": [222.5], "over_odds_close": [-110], "under_odds_close": [-110],
+                            "home_ml_close": [-120], "away_ml_close": [100]})
+
+
+def test_github_run_uses_tracker_lines_and_settles_with_tracker_close(tracker_db, tmp_path) -> None:
+    tracker = load_tracker(tracker_db)
+    run_ts = pd.Timestamp("2026-10-20T16:00Z")
+    at_run = replace(tracker, lines=tracker.lines[tracker.lines["ts"] <= run_ts])  # lo que había en la corrida
+    snaps = build_espn_snapshots(GH_PREDS, GH_UPCOMING, run_ts, "test", at_run)
+    assert snaps["line_source"].tolist() == ["tracker"] and snaps.loc[0, "line_spread"] == -3.5  # DK, no ESPN
+    picks = record_picks(snaps, tmp_path, at_run).set_index("market")
+    assert picks.loc["spread", "pick"] == "BKN -3.5" and picks.loc["spread", "move_category"] == "pendiente"
+    csv = pd.read_csv(tmp_path / "picks.csv", dtype={"game_id": str})
+    out, n = settle_picks(csv, {"G1": (110, 104)}.get, pd.Timestamp("2026-10-22T12:00Z"), lambda gid: {}, tracker)
+    out = out.set_index("market")
+    assert n == 3 and out.loc["spread", ["line_close", "move_category", "alert_kinds"]].tolist() == [
+        -5.5, "a favor", "STEAM"]
+    assert out.loc["spread", "public_pct_on_pick"] == 70.0 and out.loc["spread", "result"] == 1
+    assert load_tracker(tmp_path / "missing.sqlite3") is None  # sin base: los llamadores caen a ESPN
+
+
+def test_market_report_reads_tracker_movement_alerts_and_public(tracker_db) -> None:
+    proj = [SimpleNamespace(row={"game_id": "G1"}, market_probs={"spread": (0.72, 0.0), "total": (0.30, 0.0)})]
+    rep = build_report(GH_PREDS, proj, GH_UPCOMING, load_tracker(tracker_db),
+                       pd.Timestamp("2026-10-21T21:00Z")).set_index("Mercado")
+    sp = rep.loc["Spread"]
+    assert sp["Fuente"] == "DK" and sp["Pick"] == "BKN -5.5" and sp["category"] == "a favor"
+    assert sp["Línea (apertura → actual)"] == "-3.5 → -5.5" and sp["Alertas"] == "STEAM" and sp["% público"] == "70%"
+    no_tracker = build_report(GH_PREDS, proj, GH_UPCOMING, None).set_index("Mercado")
+    assert no_tracker.loc["Spread", "Fuente"] == "ESPN" and no_tracker.loc["Spread", "Pick"] == "BKN -1.5"
 
 
 def _run(repo, *args: str) -> str:

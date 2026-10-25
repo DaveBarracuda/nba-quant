@@ -24,7 +24,7 @@ from nba_quant import github_ledger, market_report, tracker_jobs
 from nba_quant.config import DEFAULT_CONFIG, EngineConfig
 from nba_quant.features.pipeline import NBAAdvancedFeaturePipeline
 from nba_quant.ingestion.engine import DataIngestionLayer
-from nba_quant.integrations.odds_tracker import DEFAULT_TRACKER_DB
+from nba_quant.integrations.odds_tracker import DEFAULT_TRACKER_DB, TrackerData, load_tracker
 from nba_quant.logging_utils import get_logger
 from nba_quant.market_report import DISPLAY_ABBR
 from nba_quant.settle import run_settle
@@ -126,36 +126,43 @@ def cmd_simulate(cfg: EngineConfig, args: argparse.Namespace) -> None:
     if not preds.empty:
         lake.write("predictions", preds)
     report(projections, cfg.paths.root / "reports")
+    tracker = load_tracker() if not preds.empty and not upcoming.empty else None
+    if tracker is not None:
+        emit(f"NBA Odds Tracker: {tracker.lines['ts'].nunique()} lecturas, última {tracker.lines['ts'].max()}")
     if args.record_picks and not preds.empty:
-        record_github_picks(preds, upcoming, args.blend)
+        record_github_picks(preds, upcoming, args.blend, tracker)
     if not preds.empty and not args.blend and not upcoming.empty:
-        market_vs_model(preds, projections, upcoming, args.date, cfg.paths.root / "reports")
+        market_vs_model(preds, projections, upcoming, args.date, cfg.paths.root / "reports", tracker)
     if not preds.empty:  # al final: el workflow copia desde aquí la tabla al resumen de la corrida
         emit("\nPROYECCIÓN POR PARTIDO (spread proyectado, descendente):\n" + render_matchup_table(preds))
 
 
 def market_vs_model(preds: pd.DataFrame, projections: list, upcoming: pd.DataFrame, day: str,
-                    out_dir: Path) -> None:
-    """Imprime el análisis modelo vs mercado (ESPN) y lo deja en Markdown para el resumen del workflow."""
-    report_df = market_report.build_report(preds, projections, upcoming)
-    emit("\nMODELO VS MERCADO (líneas de ESPN, modelo sin mezcla):\n" + market_report.render_text(report_df))
+                    out_dir: Path, tracker: TrackerData | None = None) -> None:
+    """Imprime el análisis modelo vs mercado (tracker o ESPN) y lo deja en Markdown para el resumen."""
+    report_df = market_report.build_report(preds, projections, upcoming, tracker)
+    source = "DraftKings del NBA Odds Tracker" if tracker is not None else "líneas de ESPN"
+    emit(f"\nMODELO VS MERCADO ({source}, modelo sin mezcla):\n" + market_report.render_text(report_df))
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"market_vs_model_{day}.md").write_text(market_report.render_markdown(report_df, day),
                                                        encoding="utf-8")
 
 
-def record_github_picks(preds: pd.DataFrame, upcoming: pd.DataFrame, blended: bool) -> None:
-    """Guarda en ledger/github/ los picks del modelo sin mezcla contra la línea actual de ESPN."""
+def record_github_picks(preds: pd.DataFrame, upcoming: pd.DataFrame, blended: bool,
+                        tracker: TrackerData | None = None) -> None:
+    """Guarda en ledger/github/ los picks del modelo sin mezcla contra la línea actual del tracker
+    (o de ESPN para los partidos que no estén en el tracker)."""
     if blended:  # con --blend la P(local) ya está mezclada con el mercado: no es el pick del modelo
         emit("Picks no guardados: la corrida usó --blend (el ledger registra el modelo sin mezcla)")
         return
     if upcoming.empty:
         emit("Picks no guardados: sólo se registran partidos futuros (--date)")
         return
-    snaps = github_ledger.build_espn_snapshots(preds, upcoming, pd.Timestamp.now(tz="UTC"), MODEL_VERSION)
-    picks = github_ledger.record_picks(snaps)
-    emit(f"Ledger de GitHub: {len(snaps) * 3} picks evaluados, {len(picks)} en el ledger "
-         f"({github_ledger.GITHUB_LEDGER_DIR / 'LEDGER.md'})")
+    snaps = github_ledger.build_espn_snapshots(preds, upcoming, pd.Timestamp.now(tz="UTC"), MODEL_VERSION, tracker)
+    picks = github_ledger.record_picks(snaps, tracker=tracker)
+    by_source = snaps["line_source"].value_counts().to_dict() if len(snaps) else {}
+    emit(f"Ledger de GitHub: {len(snaps)} partidos (por fuente de línea: {by_source}), {len(picks)} picks en el "
+         f"ledger ({github_ledger.GITHUB_LEDGER_DIR / 'LEDGER.md'})")
 
 
 TABLE_RULE = "═"

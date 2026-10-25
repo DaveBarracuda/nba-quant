@@ -1,9 +1,10 @@
-"""Modelo vs mercado con las líneas de ESPN: pick por partido y mercado, movimiento de la línea
-desde la apertura hasta ahora (a favor / en contra / sin movimiento), P del modelo vs P sin vig
-del mercado, EV al precio actual y si todavía queda valor. Lo imprime `simulate` y el workflow lo
-publica en el resumen de la corrida.
+"""Modelo vs mercado: pick por partido y mercado, movimiento de la línea desde la primera lectura
+hasta ahora (a favor / en contra / sin movimiento), P del modelo vs P sin vig del mercado, EV al
+precio actual y si todavía queda valor. Lo imprime `simulate` y el workflow lo publica en el resumen
+de la corrida.
 
-Sin el tracker no hay alertas (RLM/STEAM) ni % del público: sólo apertura y línea actual de ESPN.
+Fuente: DraftKings del NBA Odds Tracker (primera lectura -> última, con alertas RLM/STEAM y % de
+tickets del público). Si el partido no está en el tracker, apertura -> línea actual de ESPN.
 """
 
 from __future__ import annotations
@@ -11,9 +12,10 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from nba_quant.github_ledger import espn_market_lines, no_vig_home
+from nba_quant.github_ledger import espn_market_lines, no_vig_home, tracker_events
+from nba_quant.integrations.odds_tracker import TrackerData
 from nba_quant.models.devig import american_to_decimal
-from nba_quant.simulation.market_moves import MOVE_EPS, _market_move
+from nba_quant.simulation.market_moves import MOVE_EPS, _market_move, _public_on_pick
 
 DISPLAY_ABBR = {"NY": "NYK", "SA": "SAS", "GS": "GSW", "NO": "NOP", "UTAH": "UTA", "WSH": "WAS"}
 LOCAL_TZ = "America/Mexico_City"
@@ -21,12 +23,14 @@ MIN_EDGE_PP = 1.0  # por debajo, aunque el EV sea positivo, se marca "sin valor"
 GROUPS = (("a favor", "▲ El mercado va a favor del modelo"), ("en contra", "▼ El mercado va en contra del modelo"),
           ("sin movimiento", "= Sin movimiento"), ("sin dato", "Sin línea de apertura"))
 COLUMNS = ["Hora", "Partido", "Mercado", "Pick", "Línea (apertura → actual)", "Modelo", "P modelo vs mercado",
-           "Edge", "EV", "Valor"]
+           "Edge", "EV", "Valor", "Alertas", "% público", "Fuente"]
 MARKET_NAMES = {"spread": "Spread", "total": "Total", "ml": "ML"}
+TRACKER_MARKETS = {"spread": "spread", "total": "total", "ml": "ml"}
 LEGEND = ("Hora de CDMX · línea desde el lado del pick (ML: probabilidad sin vig del equipo) · movimiento = "
-          "apertura de ESPN → línea actual; umbral 0.25 pts (spread/total) y 0.5 pp (ML) · Edge = P modelo − "
-          "P mercado sin vig · EV por unidad al precio actual · ⚠ = a la línea actual ya no queda valor "
-          "(EV ≤ 0 o edge < 1 pp). Sin tracker: no hay alertas RLM/STEAM ni % del público.")
+          "primera lectura del tracker (DK) o apertura de ESPN → línea actual; umbral 0.25 pts (spread/total) "
+          "y 0.5 pp (ML) · Edge = P modelo − P mercado sin vig · EV por unidad al precio actual · ⚠ = a la "
+          "línea actual ya no queda valor (EV ≤ 0 o edge < 1 pp) · Alertas del tracker sin NOISE · % público = "
+          "tickets en el lado del pick (Action Network).")
 
 
 def _abbr(team: str) -> str:
@@ -79,16 +83,43 @@ def _market_row(mk: str, p_a: float, push: float, cur: dict, open_v: float) -> d
             "value_left": bool(ev > 0 and edge_pp >= MIN_EDGE_PP)}
 
 
-def build_report(preds: pd.DataFrame, projections: list, upcoming: pd.DataFrame) -> pd.DataFrame:
+def _tracker_market(lines: pd.DataFrame, mk: str) -> tuple[dict, float] | None:
+    """(línea/precios actuales en formato `espn_market_lines`, primera lectura) de un mercado del tracker."""
+    d = lines[lines["market"] == TRACKER_MARKETS[mk]].sort_values("ts")
+    if d.empty:
+        return None
+    last = d.iloc[-1]
+    cur = {f"line_{mk}": float(last["value"]), f"price_{mk}_a": float(last["price_a"]),
+           f"price_{mk}_b": float(last["price_b"])}
+    return cur, float(d.iloc[0]["value"])
+
+
+def _tracker_context(tracker: TrackerData, event_id: str, mk: str, home: str, away: str,
+                     side_a: bool, now: pd.Timestamp) -> tuple[str, str]:
+    """(alertas sin NOISE, % de tickets en el lado del pick) del tracker hasta ahora."""
+    a = tracker.alerts
+    a = a[(a["event_id"] == event_id) & (a["market"] == mk) & (a["kind"] != "NOISE") & (a["ts"] <= now)]
+    pct = _public_on_pick(tracker.splits, {"home_team": home, "away_team": away}, mk, side_a,
+                          now + pd.Timedelta(seconds=1))
+    return ",".join(sorted(set(a["kind"]))) or "—", "—" if pd.isna(pct) else f"{pct:.0f}%"
+
+
+def build_report(preds: pd.DataFrame, projections: list, upcoming: pd.DataFrame,
+                 tracker: TrackerData | None = None, now: pd.Timestamp | None = None) -> pd.DataFrame:
     """Una fila por partido y mercado con el pick del modelo sin mezcla y la lectura del mercado."""
+    now = now if now is not None else pd.Timestamp.now(tz="UTC")
     sched = upcoming.drop_duplicates("game_id").set_index("game_id")
+    events = tracker_events(tracker, upcoming).set_index("game_id")["event_id"].to_dict()
     probs = {p.row["game_id"]: p.market_probs for p in projections}
     rows = []
     for p in preds.itertuples(index=False):
         if p.game_id not in sched.index:
             continue
         odds = sched.loc[p.game_id]
-        cur = espn_market_lines(odds)
+        espn_cur = espn_market_lines(odds)
+        event_id = events.get(p.game_id)
+        ev_lines = (tracker.lines[(tracker.lines["event_id"] == event_id) & (tracker.lines["ts"] <= now)]
+                    if event_id is not None else None)
         home, away = _abbr(p.home_team), _abbr(p.away_team)
         leader = home if p.exp_margin >= 0 else away
         model_side = f"{leader} por {abs(p.exp_margin):.1f}"
@@ -96,9 +127,13 @@ def build_report(preds: pd.DataFrame, projections: list, upcoming: pd.DataFrame)
         for mk in ("spread", "total", "ml"):
             if mk not in market_p:
                 continue
-            r = _market_row(mk, market_p[mk][0], market_p[mk][1], cur, _open_line(mk, odds))
+            tracked = _tracker_market(ev_lines, mk) if ev_lines is not None else None
+            cur, open_v, source = (*tracked, "DK") if tracked else (espn_cur, _open_line(mk, odds), "ESPN")
+            r = _market_row(mk, market_p[mk][0], market_p[mk][1], cur, open_v)
             if r is None:
                 continue
+            alerts, public = (_tracker_context(tracker, event_id, mk, p.home_team, p.away_team, r["side_a"], now)
+                              if tracked else ("—", "—"))
             team = home if r["side_a"] else away
             pick = ({"spread": f"{team} {_side_line('spread', r['line'], r['side_a'])}",
                      "total": f"{'Over' if r['side_a'] else 'Under'} {r['line']:g}", "ml": f"{team} ML"}[mk])
@@ -113,7 +148,8 @@ def build_report(preds: pd.DataFrame, projections: list, upcoming: pd.DataFrame)
                 "Modelo": f"total {p.exp_total:.1f}" if mk == "total" else model_side,
                 "P modelo vs mercado": f"{r['p_pick']:.1%} vs {r['mkt_pick']:.1%}",
                 "Edge": f"{r['edge_pp']:+.1f} pp", "EV": f"{r['ev']:+.3f}",
-                "Valor": "✓" if r["value_left"] else "⚠",
+                "Valor": "✓" if r["value_left"] else "⚠", "Alertas": alerts, "% público": public,
+                "Fuente": source,
                 "move": r["move"], "edge_pp": r["edge_pp"], "ev": r["ev"],
             })
     if not rows:
