@@ -16,7 +16,8 @@ import pandas as pd
 
 from nba_quant.config import EngineConfig
 from nba_quant.ingestion.engine import DataIngestionLayer
-from nba_quant.integrations.odds_tracker import DEFAULT_TRACKER_DB, OddsTrackerReader, match_games
+from nba_quant.integrations.odds_tracker import (DEFAULT_TRACKER_DB, OddsTrackerReader, download_tracker_db,
+                                                 match_games)
 from nba_quant.ledger import write_ledger
 from nba_quant.logging_utils import get_logger
 from nba_quant.publish import publish_ledger
@@ -38,13 +39,28 @@ def _emit(text: str) -> None:
     emit(text)
 
 
-def run_snapshot(cfg: EngineConfig, tracker_db: Path = DEFAULT_TRACKER_DB, hours: float = 48.0,
+def resolve_tracker_db(cfg: EngineConfig, tracker_db: Path | None = None) -> Path:
+    """Base del tracker a usar: la indicada, o la publicada en GitHub (el tracker corre en Actions,
+    también con la PC apagada) descargada a data/tracker/; si la descarga falla, la copia local."""
+    if tracker_db is not None:
+        return tracker_db
+    dest = cfg.paths.root / "tracker" / "odds.sqlite3"
+    try:
+        download_tracker_db(dest)
+        log.info("Base del tracker descargada de GitHub -> %s", dest)
+        return dest
+    except (OSError, ValueError, ImportError) as exc:  # requests.RequestException hereda de OSError
+        log.warning("No se pudo descargar la base del tracker (%s); se usa %s", exc, DEFAULT_TRACKER_DB)
+        return DEFAULT_TRACKER_DB
+
+
+def run_snapshot(cfg: EngineConfig, tracker_db: Path | None = None, hours: float = 48.0,
                  seasons: list[int] | None = None) -> pd.DataFrame:
     """Proyecta (modelo puro, sin mezcla con el mercado) los partidos del tracker de las próximas
     `hours` horas y guarda el snapshot con la línea que el tracker ve ahora."""
     from nba_quant.cli import build_features, make_simulator
 
-    reader = OddsTrackerReader(tracker_db)
+    reader = OddsTrackerReader(resolve_tracker_db(cfg, tracker_db))
     now = pd.Timestamp.now(tz="UTC")
     events = reader.events()
     window = events[(events["commence_time"] > now) & (events["commence_time"] <= now + pd.Timedelta(hours=hours))]
@@ -92,7 +108,7 @@ def snapshot_table(snaps: pd.DataFrame) -> str:
     return "Snapshot del modelo vs línea actual del tracker:\n" + t.to_string(index=False)
 
 
-def run_report(cfg: EngineConfig, tracker_db: Path = DEFAULT_TRACKER_DB,
+def run_report(cfg: EngineConfig, tracker_db: Path | None = None,
                publish: bool = False) -> pd.DataFrame:
     """Califica los picks de los snapshots (primer snapshot por partido-mercado = pick oficial)."""
     lake = DataLake(cfg.paths)
@@ -100,7 +116,7 @@ def run_report(cfg: EngineConfig, tracker_db: Path = DEFAULT_TRACKER_DB,
     if snaps.empty:
         _emit("Aún no hay snapshots del modelo: ejecute primero `track-snapshot`")
         return pd.DataFrame()
-    reader = OddsTrackerReader(tracker_db)
+    reader = OddsTrackerReader(resolve_tracker_db(cfg, tracker_db))
     commence = pd.to_datetime(snaps["commence_time"], utc=True)
     done = commence < pd.Timestamp.now(tz="UTC") - RESULTS_GRACE
     if done.any():  # resultados de los partidos ya terminados (pretemporada, regular y playoffs)

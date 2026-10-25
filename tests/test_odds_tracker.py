@@ -230,6 +230,22 @@ def test_public_split_placeholders_are_ignored(tracker_db) -> None:
     assert np.isnan(_public_on_pick(empty, s, "spread", False, pd.Timestamp(TIP)))
 
 
+def test_local_jobs_prefer_github_tracker_db_with_local_fallback(tmp_path, monkeypatch) -> None:
+    from nba_quant import tracker_jobs
+    from nba_quant.config import PathsConfig
+
+    cfg = SimpleNamespace(paths=PathsConfig(root=tmp_path))
+    assert tracker_jobs.resolve_tracker_db(cfg, tmp_path / "x.sqlite3") == tmp_path / "x.sqlite3"
+    monkeypatch.setattr(tracker_jobs, "download_tracker_db", lambda dest: dest)
+    assert tracker_jobs.resolve_tracker_db(cfg) == tmp_path / "tracker" / "odds.sqlite3"
+
+    def offline(dest):
+        raise OSError("sin red")
+
+    monkeypatch.setattr(tracker_jobs, "download_tracker_db", offline)
+    assert tracker_jobs.resolve_tracker_db(cfg) == tracker_jobs.DEFAULT_TRACKER_DB
+
+
 def test_reader_fails_clearly_without_db(tmp_path) -> None:
     with pytest.raises(FileNotFoundError):
         OddsTrackerReader(tmp_path / "missing.sqlite3")

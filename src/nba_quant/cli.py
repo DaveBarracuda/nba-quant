@@ -290,7 +290,9 @@ def main(argv: list[str] | None = None) -> None:
             q.add_argument("--workers", type=int, default=None)
     for name in ("track-snapshot", "track-report"):
         t = sub.add_parser(name, help="conexión con el NBA Odds Tracker (SQLite, sólo lectura)")
-        t.add_argument("--tracker-db", type=Path, default=DEFAULT_TRACKER_DB)
+        t.add_argument("--tracker-db", type=Path, default=None,
+                       help="por defecto se descarga la base del tracker de GitHub (respaldo: "
+                            f"{DEFAULT_TRACKER_DB})")
         if name == "track-snapshot":
             t.add_argument("--hours", type=float, default=48.0, help="horizonte de partidos a proyectar")
             t.add_argument("--seasons", type=int, nargs="*", default=None)

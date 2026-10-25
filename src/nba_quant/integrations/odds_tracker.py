@@ -30,6 +30,26 @@ DEFAULT_TRACKER_DB = Path(os.environ.get("NBA_ODDS_TRACKER_DB", r"C:\NBA Odds tr
 # El tracker corre en GitHub Actions y publica la base en la rama `data` de su repo (público);
 # los workflows de este repo la descargan de aquí y la exponen con NBA_ODDS_TRACKER_DB.
 TRACKER_DATA_URL = "https://raw.githubusercontent.com/DaveBarracuda/nba-odds-tracker/data/odds.sqlite3"
+# Misma base vía la API (sin la caché de ~5 min de raw.githubusercontent); el repo es público.
+TRACKER_API_URL = ("https://api.github.com/repos/DaveBarracuda/nba-odds-tracker/contents/odds.sqlite3"
+                   "?ref=data")
+DOWNLOAD_TIMEOUT_S = 60
+SQLITE_MAGIC = b"SQLite format 3\x00"
+
+
+def download_tracker_db(dest: Path, url: str = TRACKER_API_URL) -> Path:
+    """Descarga la base del tracker publicada en GitHub (escritura atómica; valida que sea SQLite)."""
+    import requests
+
+    resp = requests.get(url, headers={"Accept": "application/vnd.github.raw"}, timeout=DOWNLOAD_TIMEOUT_S)
+    resp.raise_for_status()
+    if not resp.content.startswith(SQLITE_MAGIC):
+        raise ValueError(f"La descarga de {url} no es una base SQLite")
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dest.with_suffix(".tmp")
+    tmp.write_bytes(resp.content)
+    tmp.replace(dest)
+    return dest
 US_DATE_OFFSET = pd.Timedelta(hours=-6)  # UTC -> fecha del partido en EE.UU. (tips 12:00 ET - 22:30 PT)
 MARKETS = {"spreads": "spread", "totals": "total", "h2h": "ml"}
 TEAM_ALIASES = {"LA Clippers": "Los Angeles Clippers"}
