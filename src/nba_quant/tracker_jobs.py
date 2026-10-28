@@ -25,6 +25,7 @@ from nba_quant.simulation.market_moves import (build_snapshots, first_snapshot_p
                                                pick_table, summarize)
 from nba_quant.simulation.slate import MODEL_VERSION
 from nba_quant.storage.lake import DataLake
+from nba_quant.weekly_report import WEEKLY_DIR, strategy_picks, write_weekly
 
 log = get_logger("tracker_jobs")
 
@@ -108,6 +109,16 @@ def snapshot_table(snaps: pd.DataFrame) -> str:
     return "Snapshot del modelo vs línea actual del tracker:\n" + t.to_string(index=False)
 
 
+def run_weekly(cfg: EngineConfig, tracker_db: Path | None = None) -> list[Path]:
+    """Regenera ledger/weekly/ (cada semana y el acumulado) sin recalificar el ledger."""
+    lake = DataLake(cfg.paths)
+    snaps, games = lake.read("model_snapshots"), lake.read("games")
+    lines = OddsTrackerReader(resolve_tracker_db(cfg, tracker_db)).lines()
+    weeks = write_weekly(strategy_picks(snaps, games[games["game_id"].isin(snaps["game_id"])], lines))
+    _emit(f"Reporte semanal: {len(weeks)} semanas en {WEEKLY_DIR}" + "".join(f"\n  {w.name}" for w in weeks))
+    return weeks
+
+
 def run_report(cfg: EngineConfig, tracker_db: Path | None = None,
                publish: bool = False) -> pd.DataFrame:
     """Califica los picks de los snapshots (primer snapshot por partido-mercado = pick oficial)."""
@@ -137,6 +148,8 @@ def run_report(cfg: EngineConfig, tracker_db: Path | None = None,
     drift.to_csv(out / "tracker_model_vs_market_drift.csv", index=False)
     ledger = write_ledger(official, summary)
     _emit(f"Ledger actualizado: {ledger}")
+    weeks = write_weekly(strategy_picks(snaps, results, reader.lines()))
+    _emit(f"Reporte semanal: {len(weeks)} semanas en {WEEKLY_DIR}")
     if publish:
         _emit(f"Publicación en GitHub: {publish_ledger(label=pd.Timestamp.now(tz='UTC').strftime('%Y-%m-%d'))}")
     pd.set_option("display.width", 220)

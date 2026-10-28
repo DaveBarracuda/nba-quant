@@ -1,0 +1,5 @@
+game_id,day,matchup,strategy,pick,line,price,strength,category,clv,result,units,rank,top5,week_start,bucket
+401909880,2026-10-27,POR @ LAL,spread,LAL -1.5,-1.5,-112.0,0.3448800000000001,sin movimiento,0.0,0.0,-1.0,1.0,True,2026-10-27,0-1 pts
+401909880,2026-10-27,POR @ LAL,total,Under 233.5,233.5,-112.0,7.762259999999998,en contra,-1.0,0.0,-1.0,1.0,True,2026-10-27,7+ pts
+401909880,2026-10-27,POR @ LAL,ml ganador,LAL ML,0.5324675324675325,-125.0,0.54506,en contra,-0.02163329628118371,0.0,-1.0,1.0,True,2026-10-27,50-55 % P
+401909880,2026-10-27,POR @ LAL,ml valor,LAL ML,0.5324675324675325,-125.0,0.012592467532467455,en contra,-0.02163329628118371,0.0,-1.0,1.0,True,2026-10-27,0-2 pp

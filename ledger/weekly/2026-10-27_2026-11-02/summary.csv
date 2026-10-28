@@ -1,0 +1,21 @@
+estrategia,filtro,picks,récord,WR,unidades,ROI
+spread,todas,1,0-1-0,0.0,-1.0,-1.0
+spread,a favor + sin mov.,1,0-1-0,0.0,-1.0,-1.0
+spread,a favor,0,0-0-0,,0.0,
+spread,sin movimiento,1,0-1-0,0.0,-1.0,-1.0
+spread,en contra,0,0-0-0,,0.0,
+total,todas,1,0-1-0,0.0,-1.0,-1.0
+total,a favor + sin mov.,0,0-0-0,,0.0,
+total,a favor,0,0-0-0,,0.0,
+total,sin movimiento,0,0-0-0,,0.0,
+total,en contra,1,0-1-0,0.0,-1.0,-1.0
+ml ganador,todas,1,0-1-0,0.0,-1.0,-1.0
+ml ganador,a favor + sin mov.,0,0-0-0,,0.0,
+ml ganador,a favor,0,0-0-0,,0.0,
+ml ganador,sin movimiento,0,0-0-0,,0.0,
+ml ganador,en contra,1,0-1-0,0.0,-1.0,-1.0
+ml valor,todas,1,0-1-0,0.0,-1.0,-1.0
+ml valor,a favor + sin mov.,0,0-0-0,,0.0,
+ml valor,a favor,0,0-0-0,,0.0,
+ml valor,sin movimiento,0,0-0-0,,0.0,
+ml valor,en contra,1,0-1-0,0.0,-1.0,-1.0

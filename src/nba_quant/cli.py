@@ -300,13 +300,15 @@ def main(argv: list[str] | None = None) -> None:
             t.add_argument("--publish-ledger", action="store_true",
                            help="commit + push de ledger/ a GitHub (sólo si cambió)")
     sub.add_parser("settle-ledger", help="liquida ledger/picks.csv con marcadores de ESPN (sin lake ni tracker)")
+    sub.add_parser("weekly-report", help="regenera ledger/weekly/: cada semana y el acumulado por estrategia")
     sub.add_parser("demo")
     args = parser.parse_args(argv)
     handlers = {"ingest": cmd_ingest, "features": cmd_features, "simulate": cmd_simulate,
                 "backtest": cmd_backtest, "calibrate": cmd_calibrate, "demo": lambda c, a: run_demo(c),
                 "track-snapshot": lambda c, a: tracker_jobs.run_snapshot(c, a.tracker_db, a.hours, a.seasons),
                 "track-report": lambda c, a: tracker_jobs.run_report(c, a.tracker_db, a.publish_ledger),
-                "settle-ledger": lambda c, a: emit(f"Picks liquidados: {run_settle()}")}
+                "settle-ledger": lambda c, a: emit(f"Picks liquidados: {run_settle()}"),
+                "weekly-report": lambda c, a: tracker_jobs.run_weekly(c)}
     handlers[args.cmd](DEFAULT_CONFIG, args)
 
 
