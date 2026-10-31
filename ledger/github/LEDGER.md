@@ -1,5 +1,5 @@
 # Ledger de picks — workflow de GitHub
-_Actualizado: 2026-10-31 17:08 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea de DraftKings del NBA Odds Tracker (o de ESPN si el partido no está en el tracker) en ese momento)._
+_Actualizado: 2026-10-31 17:54 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea de DraftKings del NBA Odds Tracker (o de ESPN si el partido no está en el tracker) en ese momento)._
 
 Generado por el workflow *Ejecutar modelo* (modelo sin mezcla). El cierre y el movimiento a favor / en contra se toman al liquidar de la misma fuente que la línea del pick. Ledger de la PC local: [../LEDGER.md](../LEDGER.md)
 
@@ -9,21 +9,25 @@ Generado por el workflow *Ejecutar modelo* (modelo sin mezcla). El cierre y el m
 
 | Grupo | Valor | Picks | Calificados | Récord | WR | Unidades | ROI | CLV medio |
 |---|---|---|---|---|---|---|---|---|
-| GENERAL | todos | 192 | 192 | 74-118-0 | 38.5% | -51.67 | -26.9% | -0.031 |
-| mercado | ml | 64 | 64 | 19-45-0 | 29.7% | -28.79 | -45.0% | -0.000 |
-| mercado | spread | 64 | 64 | 25-39-0 | 39.1% | -16.15 | -25.2% | -0.156 |
-| mercado | total | 64 | 64 | 30-34-0 | 46.9% | -6.73 | -10.5% | +0.062 |
+| GENERAL | todos | 213 | 192 | 74-118-0 | 38.5% | -51.67 | -26.9% | -0.031 |
+| mercado | ml | 71 | 64 | 19-45-0 | 29.7% | -28.79 | -45.0% | -0.000 |
+| mercado | spread | 71 | 64 | 25-39-0 | 39.1% | -16.15 | -25.2% | -0.156 |
+| mercado | total | 71 | 64 | 30-34-0 | 46.9% | -6.73 | -10.5% | +0.062 |
 | movimiento | a favor | 39 | 39 | 20-19-0 | 51.3% | +0.03 | +0.1% | +0.881 |
 | movimiento | en contra | 45 | 45 | 10-35-0 | 22.2% | -26.08 | -57.9% | -0.897 |
+| movimiento | pendiente | 21 | 0 | 0-0-0 | — | +0.00 | — | — |
 | movimiento | sin movimiento | 108 | 108 | 44-64-0 | 40.7% | -25.63 | -23.7% | -0.000 |
 | mercado × movimiento | ml · a favor | 15 | 15 | 7-8-0 | 46.7% | -0.54 | -3.6% | +0.024 |
 | mercado × movimiento | ml · en contra | 17 | 17 | 2-15-0 | 11.8% | -13.40 | -78.8% | -0.021 |
+| mercado × movimiento | ml · pendiente | 7 | 0 | 0-0-0 | — | +0.00 | — | — |
 | mercado × movimiento | ml · sin movimiento | 32 | 32 | 10-22-0 | 31.2% | -14.86 | -46.4% | -0.000 |
 | mercado × movimiento | spread · a favor | 9 | 9 | 4-5-0 | 44.4% | -1.48 | -16.5% | +1.111 |
 | mercado × movimiento | spread · en contra | 13 | 13 | 3-10-0 | 23.1% | -7.23 | -55.6% | -1.538 |
+| mercado × movimiento | spread · pendiente | 7 | 0 | 0-0-0 | — | +0.00 | — | — |
 | mercado × movimiento | spread · sin movimiento | 42 | 42 | 18-24-0 | 42.9% | -7.44 | -17.7% | +0.000 |
 | mercado × movimiento | total · a favor | 15 | 15 | 9-6-0 | 60.0% | +2.05 | +13.7% | +1.600 |
 | mercado × movimiento | total · en contra | 15 | 15 | 5-10-0 | 33.3% | -5.45 | -36.3% | -1.333 |
+| mercado × movimiento | total · pendiente | 7 | 0 | 0-0-0 | — | +0.00 | — | — |
 | mercado × movimiento | total · sin movimiento | 34 | 34 | 16-18-0 | 47.1% | -3.33 | -9.8% | +0.000 |
 
 ## CLV y movimiento del mercado hacia el modelo
@@ -41,6 +45,27 @@ _% hacia el modelo = picks en que la línea se movió a favor ÷ picks con movim
 
 | Fecha | Partido | Mercado | Pick | Línea pick | Cierre | Mercado vs modelo | CLV | Alertas | % público en pick | Resultado | Unidades |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-31 | OKC @ HOU | ML | OKC ML | 42.8% | — | … pendiente | — | — | 34 | pendiente | — |
+| 2026-10-31 | OKC @ HOU | Spread | OKC +2.5 | +2.5 | — | … pendiente | — | — | 30 | pendiente | — |
+| 2026-10-31 | OKC @ HOU | Total | Under 219.5 | 219.5 | — | … pendiente | — | — | 8 | pendiente | — |
+| 2026-10-31 | CLE @ MIL | ML | MIL ML | 23.4% | — | … pendiente | — | — | 8 | pendiente | — |
+| 2026-10-31 | CLE @ MIL | Spread | CLE -9.5 | -9.5 | — | … pendiente | — | — | 74 | pendiente | — |
+| 2026-10-31 | CLE @ MIL | Total | Under 235.5 | 235.5 | — | … pendiente | — | — | 32 | pendiente | — |
+| 2026-10-31 | MIN @ SA | ML | MIN ML | 18.3% | — | … pendiente | — | — | 13 | pendiente | — |
+| 2026-10-31 | MIN @ SA | Spread | MIN +12.5 | +12.5 | — | … pendiente | — | — | 53 | pendiente | — |
+| 2026-10-31 | MIN @ SA | Total | Under 225.5 | 225.5 | — | … pendiente | — | — | 9 | pendiente | — |
+| 2026-10-31 | SAC @ MEM | ML | SAC ML | 24.3% | — | … pendiente | — | — | 8 | pendiente | — |
+| 2026-10-31 | SAC @ MEM | Spread | SAC +8.5 | +8.5 | — | … pendiente | — | — | 22 | pendiente | — |
+| 2026-10-31 | SAC @ MEM | Total | Over 230.5 | 230.5 | — | … pendiente | — | — | 80 | pendiente | — |
+| 2026-10-31 | ATL @ NO | ML | ATL ML | 61.6% | — | … pendiente | — | — | 84 | pendiente | — |
+| 2026-10-31 | ATL @ NO | Spread | ATL -4.5 | -4.5 | — | … pendiente | — | — | 81 | pendiente | — |
+| 2026-10-31 | ATL @ NO | Total | Under 240.5 | 240.5 | — | … pendiente | — | — | 48 | pendiente | — |
+| 2026-10-31 | PHI @ CHA | ML | CHA ML | 50.4% | — | … pendiente | — | — | 13 | pendiente | — |
+| 2026-10-31 | PHI @ CHA | Spread | CHA -1.5 | -1.5 | — | … pendiente | — | — | 4 | pendiente | — |
+| 2026-10-31 | PHI @ CHA | Total | Under 213.5 | 213.5 | — | … pendiente | — | — | 25 | pendiente | — |
+| 2026-10-31 | POR @ UTAH | ML | UTAH ML | 27.4% | — | … pendiente | — | — | 12 | pendiente | — |
+| 2026-10-31 | POR @ UTAH | Spread | POR -7.5 | -7.5 | — | … pendiente | — | — | 75 | pendiente | — |
+| 2026-10-31 | POR @ UTAH | Total | Under 231.5 | 231.5 | — | … pendiente | — | — | 19 | pendiente | — |
 | 2026-10-30 | DEN @ PHX | ML | PHX ML | 38.4% | 38.4% | = sin mov. | +0.00 | — | 10 | ❌ L | -1.00 |
 | 2026-10-30 | DEN @ PHX | Spread | PHX +3.5 | +3.5 | +4.5 | ▼ en contra | -1.00 | STEAM | 25 | ❌ L | -1.00 |
 | 2026-10-30 | DEN @ PHX | Total | Under 231.5 | 231.5 | 231.5 | = sin mov. | -0.00 | — | 12 | ❌ L | -1.00 |
