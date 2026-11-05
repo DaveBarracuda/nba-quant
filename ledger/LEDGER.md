@@ -1,5 +1,5 @@
 # Ledger de picks del modelo
-_Actualizado: 2026-11-05 02:00 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea del NBA Odds Tracker en ese momento)._
+_Actualizado: 2026-11-05 19:48 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea del NBA Odds Tracker en ese momento)._
 
 Picks del workflow de GitHub *Ejecutar modelo* (líneas de ESPN): [github/LEDGER.md](github/LEDGER.md)
 
@@ -9,22 +9,22 @@ Picks del workflow de GitHub *Ejecutar modelo* (líneas de ESPN): [github/LEDGER
 
 | Grupo | Valor | Picks | Calificados | Récord | WR | Unidades | ROI | CLV medio |
 |---|---|---|---|---|---|---|---|---|
-| GENERAL | todos | 345 | 312 | 154-158-0 | 49.4% | -16.71 | -5.4% | +0.251 |
-| mercado | ml | 115 | 104 | 37-67-0 | 35.6% | -32.37 | -31.1% | +0.005 |
-| mercado | spread | 115 | 104 | 52-52-0 | 50.0% | -4.61 | -4.4% | +0.165 |
-| mercado | total | 115 | 104 | 65-39-0 | 62.5% | +20.26 | +19.5% | +0.583 |
-| movimiento | a favor | 140 | 126 | 68-58-0 | 54.0% | +3.80 | +3.0% | +1.405 |
-| movimiento | en contra | 100 | 91 | 39-52-0 | 42.9% | -15.73 | -17.3% | -1.101 |
-| movimiento | sin movimiento | 105 | 95 | 47-48-0 | 49.5% | -4.78 | -5.0% | +0.000 |
-| mercado × movimiento | ml · a favor | 52 | 48 | 20-28-0 | 41.7% | -9.75 | -20.3% | +0.033 |
-| mercado × movimiento | ml · en contra | 38 | 34 | 12-22-0 | 35.3% | -10.59 | -31.1% | -0.030 |
-| mercado × movimiento | ml · sin movimiento | 25 | 22 | 5-17-0 | 22.7% | -12.03 | -54.7% | +0.000 |
-| mercado × movimiento | spread · a favor | 38 | 32 | 18-14-0 | 56.2% | +2.38 | +7.4% | +1.658 |
-| mercado × movimiento | spread · en contra | 27 | 26 | 9-17-0 | 34.6% | -8.71 | -33.5% | -1.630 |
-| mercado × movimiento | spread · sin movimiento | 50 | 46 | 25-21-0 | 54.3% | +1.72 | +3.7% | +0.000 |
-| mercado × movimiento | total · a favor | 50 | 46 | 30-16-0 | 65.2% | +11.16 | +24.3% | +2.640 |
-| mercado × movimiento | total · en contra | 35 | 31 | 18-13-0 | 58.1% | +3.57 | +11.5% | -1.857 |
-| mercado × movimiento | total · sin movimiento | 30 | 27 | 17-10-0 | 63.0% | +5.53 | +20.5% | +0.000 |
+| GENERAL | todos | 345 | 345 | 171-174-0 | 49.6% | -17.28 | -5.0% | +0.251 |
+| mercado | ml | 115 | 115 | 43-72-0 | 37.4% | -31.71 | -27.6% | +0.005 |
+| mercado | spread | 115 | 115 | 58-57-0 | 50.4% | -4.29 | -3.7% | +0.165 |
+| mercado | total | 115 | 115 | 70-45-0 | 60.9% | +18.73 | +16.3% | +0.583 |
+| movimiento | a favor | 140 | 140 | 77-63-0 | 55.0% | +7.57 | +5.4% | +1.405 |
+| movimiento | en contra | 100 | 100 | 42-58-0 | 42.0% | -19.41 | -19.4% | -1.101 |
+| movimiento | sin movimiento | 105 | 105 | 52-53-0 | 49.5% | -5.43 | -5.2% | +0.000 |
+| mercado × movimiento | ml · a favor | 52 | 52 | 23-29-0 | 44.2% | -7.32 | -14.1% | +0.033 |
+| mercado × movimiento | ml · en contra | 38 | 38 | 14-24-0 | 36.8% | -11.18 | -29.4% | -0.030 |
+| mercado × movimiento | ml · sin movimiento | 25 | 25 | 6-19-0 | 24.0% | -13.22 | -52.9% | +0.000 |
+| mercado × movimiento | spread · a favor | 38 | 38 | 21-17-0 | 55.3% | +2.03 | +5.3% | +1.658 |
+| mercado × movimiento | spread · en contra | 27 | 27 | 10-17-0 | 37.0% | -7.80 | -28.9% | -1.630 |
+| mercado × movimiento | spread · sin movimiento | 50 | 50 | 27-23-0 | 54.0% | +1.48 | +3.0% | +0.000 |
+| mercado × movimiento | total · a favor | 50 | 50 | 33-17-0 | 66.0% | +12.85 | +25.7% | +2.640 |
+| mercado × movimiento | total · en contra | 35 | 35 | 18-17-0 | 51.4% | -0.43 | -1.2% | -1.857 |
+| mercado × movimiento | total · sin movimiento | 30 | 30 | 19-11-0 | 63.3% | +6.31 | +21.0% | +0.000 |
 
 ## CLV y movimiento del mercado hacia el modelo
 
@@ -41,39 +41,39 @@ _% hacia el modelo = picks en que la línea se movió a favor ÷ picks con movim
 
 | Fecha | Partido | Mercado | Pick | Línea pick | Cierre | Mercado vs modelo | CLV | Alertas | % público en pick | Resultado | Unidades |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 2026-11-04 | LAL @ SAC | ML | SAC ML | 17.9% | 16.8% | ▼ en contra | -1.06 | RLM | 3 | pendiente | — |
-| 2026-11-04 | LAL @ SAC | Spread | LAL -11.5 | -11.5 | -12.5 | ▲ a favor | +1.00 | STEAM | 65 | pendiente | — |
-| 2026-11-04 | LAL @ SAC | Total | Under 238.5 | 238.5 | 233.5 | ▲ a favor | +5.00 | RLM,STEAM | 17 | pendiente | — |
-| 2026-11-04 | DAL @ SA | ML | SA ML | 80.8% | 82.8% | ▲ a favor | +1.95 | RLM | 93 | pendiente | — |
-| 2026-11-04 | DAL @ SA | Spread | SA -11.5 | -11.5 | -12.5 | ▲ a favor | +1.00 | STEAM | 42 | pendiente | — |
-| 2026-11-04 | DAL @ SA | Total | Under 227.5 | 227.5 | 226.5 | ▲ a favor | +1.00 | RLM | 14 | pendiente | — |
-| 2026-11-04 | POR @ PHX | ML | PHX ML | 42.8% | 42.8% | = sin mov. | +0.00 | — | 15 | pendiente | — |
-| 2026-11-04 | POR @ PHX | Spread | PHX +3.5 | +3.5 | +2.5 | ▲ a favor | +1.00 | STEAM | 43 | pendiente | — |
-| 2026-11-04 | POR @ PHX | Total | Under 227.5 | 227.5 | 227.5 | = sin mov. | -0.00 | RLM | 14 | pendiente | — |
-| 2026-11-04 | TOR @ DEN | ML | TOR ML | 35.6% | 35.7% | = sin mov. | +0.12 | RLM | 11 | pendiente | — |
-| 2026-11-04 | TOR @ DEN | Spread | TOR +4.5 | +4.5 | +4.5 | = sin mov. | -0.00 | — | 45 | pendiente | — |
-| 2026-11-04 | TOR @ DEN | Total | Over 231.5 | 231.5 | 231.5 | = sin mov. | +0.00 | RLM | 81 | pendiente | — |
-| 2026-11-04 | MIN @ HOU | ML | MIN ML | 28.2% | 29.4% | ▲ a favor | +1.21 | RLM | 10 | pendiente | — |
-| 2026-11-04 | MIN @ HOU | Spread | MIN +8.5 | +8.5 | +7.5 | ▲ a favor | +1.00 | RLM,STEAM | 49 | pendiente | — |
-| 2026-11-04 | MIN @ HOU | Total | Over 219.5 | 219.5 | 219.5 | = sin mov. | +0.00 | RLM,STEAM | 87 | pendiente | — |
-| 2026-11-04 | CLE @ OKC | ML | OKC ML | 52.3% | 59.3% | ▲ a favor | +6.98 | STEAM | 70 | pendiente | — |
-| 2026-11-04 | CLE @ OKC | Spread | OKC -1.5 | -1.5 | -3.5 | ▲ a favor | +2.00 | RLM,STEAM | 39 | pendiente | — |
-| 2026-11-04 | CLE @ OKC | Total | Under 227.5 | 227.5 | 226.5 | ▲ a favor | +1.00 | RLM | 15 | pendiente | — |
-| 2026-11-04 | CHA @ BKN | ML | BKN ML | 42.9% | 39.5% | ▼ en contra | -3.34 | GRADUAL | 21 | pendiente | — |
-| 2026-11-04 | CHA @ BKN | Spread | BKN +3.5 | +3.5 | +3.5 | = sin mov. | +0.00 | STEAM | 49 | pendiente | — |
-| 2026-11-04 | CHA @ BKN | Total | Under 212.5 | 212.5 | 213.5 | ▼ en contra | -1.00 | RLM,STEAM | 20 | pendiente | — |
-| 2026-11-04 | CHI @ NY | ML | NY ML | 82.3% | 81.8% | ▼ en contra | -0.54 | — | 96 | pendiente | — |
-| 2026-11-04 | CHI @ NY | Spread | NY -12.5 | -12.5 | -11.5 | ▼ en contra | -1.00 | RLM,STEAM | 61 | pendiente | — |
-| 2026-11-04 | CHI @ NY | Total | Under 232.5 | 232.5 | 233.5 | ▼ en contra | -1.00 | — | 30 | pendiente | — |
-| 2026-11-04 | MIL @ BOS | ML | MIL ML | 19.6% | 18.3% | ▼ en contra | -1.23 | RLM | 4 | pendiente | — |
-| 2026-11-04 | MIL @ BOS | Spread | BOS -11.5 | -11.5 | -12.5 | ▲ a favor | +1.00 | INFO,RLM,STEAM | 62 | pendiente | — |
-| 2026-11-04 | MIL @ BOS | Total | Over 223.5 | 223.5 | 222.5 | ▼ en contra | -1.00 | GRADUAL,RLM,STEAM | 80 | pendiente | — |
-| 2026-11-04 | ATL @ WSH | ML | ATL ML | 52.9% | 53.2% | = sin mov. | +0.21 | INFO,STEAM | 54 | pendiente | — |
-| 2026-11-04 | ATL @ WSH | Spread | ATL -1.5 | -1.5 | -1.5 | = sin mov. | -0.00 | INFO,RLM,STEAM | 33 | pendiente | — |
-| 2026-11-04 | ATL @ WSH | Total | Under 233.5 | 233.5 | 229.5 | ▲ a favor | +4.00 | GRADUAL,INFO,RLM | 38 | pendiente | — |
-| 2026-11-04 | PHI @ DET | ML | DET ML | 53.2% | 55.3% | ▲ a favor | +2.09 | GRADUAL,RLM | 35 | pendiente | — |
-| 2026-11-04 | PHI @ DET | Spread | DET -2.5 | -2.5 | -2.5 | = sin mov. | +0.00 | — | 23 | pendiente | — |
-| 2026-11-04 | PHI @ DET | Total | Under 217.5 | 217.5 | 219.5 | ▼ en contra | -2.00 | — | 22 | pendiente | — |
+| 2026-11-04 | LAL @ SAC | ML | SAC ML | 17.9% | 16.8% | ▼ en contra | -1.06 | RLM | 3 | ❌ L | -1.00 |
+| 2026-11-04 | LAL @ SAC | Spread | LAL -11.5 | -11.5 | -12.5 | ▲ a favor | +1.00 | STEAM | 65 | ✅ W | +0.92 |
+| 2026-11-04 | LAL @ SAC | Total | Under 238.5 | 238.5 | 233.5 | ▲ a favor | +5.00 | RLM,STEAM | 17 | ✅ W | +0.87 |
+| 2026-11-04 | DAL @ SA | ML | SA ML | 80.8% | 82.8% | ▲ a favor | +1.95 | RLM | 93 | ✅ W | +0.19 |
+| 2026-11-04 | DAL @ SA | Spread | SA -11.5 | -11.5 | -12.5 | ▲ a favor | +1.00 | STEAM | 42 | ❌ L | -1.00 |
+| 2026-11-04 | DAL @ SA | Total | Under 227.5 | 227.5 | 226.5 | ▲ a favor | +1.00 | RLM | 14 | ✅ W | +0.91 |
+| 2026-11-04 | POR @ PHX | ML | PHX ML | 42.8% | 42.8% | = sin mov. | +0.00 | — | 15 | ❌ L | -1.00 |
+| 2026-11-04 | POR @ PHX | Spread | PHX +3.5 | +3.5 | +2.5 | ▲ a favor | +1.00 | STEAM | 43 | ❌ L | -1.00 |
+| 2026-11-04 | POR @ PHX | Total | Under 227.5 | 227.5 | 227.5 | = sin mov. | -0.00 | RLM | 14 | ❌ L | -1.00 |
+| 2026-11-04 | TOR @ DEN | ML | TOR ML | 35.6% | 35.7% | = sin mov. | +0.12 | RLM | 11 | ❌ L | -1.00 |
+| 2026-11-04 | TOR @ DEN | Spread | TOR +4.5 | +4.5 | +4.5 | = sin mov. | -0.00 | — | 45 | ❌ L | -1.00 |
+| 2026-11-04 | TOR @ DEN | Total | Over 231.5 | 231.5 | 231.5 | = sin mov. | +0.00 | RLM | 81 | ✅ W | +0.91 |
+| 2026-11-04 | MIN @ HOU | ML | MIN ML | 28.2% | 29.4% | ▲ a favor | +1.21 | RLM | 10 | ✅ W | +2.41 |
+| 2026-11-04 | MIN @ HOU | Spread | MIN +8.5 | +8.5 | +7.5 | ▲ a favor | +1.00 | RLM,STEAM | 49 | ✅ W | +0.86 |
+| 2026-11-04 | MIN @ HOU | Total | Over 219.5 | 219.5 | 219.5 | = sin mov. | +0.00 | RLM,STEAM | 87 | ✅ W | +0.87 |
+| 2026-11-04 | CLE @ OKC | ML | OKC ML | 52.3% | 59.3% | ▲ a favor | +6.98 | STEAM | 70 | ✅ W | +0.83 |
+| 2026-11-04 | CLE @ OKC | Spread | OKC -1.5 | -1.5 | -3.5 | ▲ a favor | +2.00 | RLM,STEAM | 39 | ✅ W | +0.87 |
+| 2026-11-04 | CLE @ OKC | Total | Under 227.5 | 227.5 | 226.5 | ▲ a favor | +1.00 | RLM | 15 | ❌ L | -1.00 |
+| 2026-11-04 | CHA @ BKN | ML | BKN ML | 42.9% | 39.5% | ▼ en contra | -3.34 | GRADUAL | 21 | ✅ W | +1.24 |
+| 2026-11-04 | CHA @ BKN | Spread | BKN +3.5 | +3.5 | +3.5 | = sin mov. | +0.00 | STEAM | 49 | ✅ W | +0.88 |
+| 2026-11-04 | CHA @ BKN | Total | Under 212.5 | 212.5 | 213.5 | ▼ en contra | -1.00 | RLM,STEAM | 20 | ❌ L | -1.00 |
+| 2026-11-04 | CHI @ NY | ML | NY ML | 82.3% | 81.8% | ▼ en contra | -0.54 | — | 96 | ✅ W | +0.17 |
+| 2026-11-04 | CHI @ NY | Spread | NY -12.5 | -12.5 | -11.5 | ▼ en contra | -1.00 | RLM,STEAM | 61 | ✅ W | +0.91 |
+| 2026-11-04 | CHI @ NY | Total | Under 232.5 | 232.5 | 233.5 | ▼ en contra | -1.00 | — | 30 | ❌ L | -1.00 |
+| 2026-11-04 | MIL @ BOS | ML | MIL ML | 19.6% | 18.3% | ▼ en contra | -1.23 | RLM | 4 | ❌ L | -1.00 |
+| 2026-11-04 | MIL @ BOS | Spread | BOS -11.5 | -11.5 | -12.5 | ▲ a favor | +1.00 | INFO,RLM,STEAM | 62 | ❌ L | -1.00 |
+| 2026-11-04 | MIL @ BOS | Total | Over 223.5 | 223.5 | 222.5 | ▼ en contra | -1.00 | GRADUAL,RLM,STEAM | 80 | ❌ L | -1.00 |
+| 2026-11-04 | ATL @ WSH | ML | ATL ML | 52.9% | 53.2% | = sin mov. | +0.21 | INFO,STEAM | 54 | ✅ W | +0.81 |
+| 2026-11-04 | ATL @ WSH | Spread | ATL -1.5 | -1.5 | -1.5 | = sin mov. | -0.00 | INFO,RLM,STEAM | 33 | ✅ W | +0.88 |
+| 2026-11-04 | ATL @ WSH | Total | Under 233.5 | 233.5 | 229.5 | ▲ a favor | +4.00 | GRADUAL,INFO,RLM | 38 | ✅ W | +0.91 |
+| 2026-11-04 | PHI @ DET | ML | DET ML | 53.2% | 55.3% | ▲ a favor | +2.09 | GRADUAL,RLM | 35 | ❌ L | -1.00 |
+| 2026-11-04 | PHI @ DET | Spread | DET -2.5 | -2.5 | -2.5 | = sin mov. | +0.00 | — | 23 | ❌ L | -1.00 |
+| 2026-11-04 | PHI @ DET | Total | Under 217.5 | 217.5 | 219.5 | ▼ en contra | -2.00 | — | 22 | ❌ L | -1.00 |
 | 2026-11-02 | MIA @ LAL | ML | LAL ML | 55.1% | 54.3% | ▼ en contra | -0.87 | GRADUAL | 70 | ✅ W | +0.74 |
 | 2026-11-02 | MIA @ LAL | Spread | LAL -2.5 | -2.5 | -1.5 | ▼ en contra | -1.00 | RLM,STEAM | 42 | ✅ W | +0.93 |
 | 2026-11-02 | MIA @ LAL | Total | Over 236.5 | 236.5 | 238.5 | ▲ a favor | +2.00 | — | 88 | ✅ W | +0.91 |
