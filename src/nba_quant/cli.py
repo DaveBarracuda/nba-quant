@@ -22,6 +22,7 @@ import pandas as pd
 
 from nba_quant import github_ledger, market_report, tracker_jobs
 from nba_quant.config import DEFAULT_CONFIG, EngineConfig
+from nba_quant.features.availability import build_absences
 from nba_quant.features.pipeline import NBAAdvancedFeaturePipeline
 from nba_quant.ingestion.engine import DataIngestionLayer
 from nba_quant.integrations.odds_tracker import DEFAULT_TRACKER_DB, TrackerData, load_tracker
@@ -58,9 +59,38 @@ def build_features(cfg: EngineConfig, lake: DataLake, seasons: list[int] | None,
 
 
 def make_simulator(cfg: EngineConfig, feats: pd.DataFrame, pipe: NBAAdvancedFeaturePipeline,
-                   odds: pd.DataFrame, officials: pd.DataFrame, extra_games: pd.DataFrame | None = None) -> SlateSimulator:
+                   odds: pd.DataFrame, officials: pd.DataFrame, extra_games: pd.DataFrame | None = None,
+                   injuries: pd.DataFrame | None = None) -> SlateSimulator:
+    """`injuries` (reporte de ESPN de hoy) ajusta sólo los partidos de `extra_games` (futuros)."""
     games = pipe.games if extra_games is None else pd.concat([pipe.games, extra_games], ignore_index=True)
-    return SlateSimulator(cfg, feats, games, odds, officials, game_fouls(pipe.events), pipe.player_box)
+    teams, players = pd.DataFrame(), pd.DataFrame()
+    if injuries is not None and extra_games is not None and not extra_games.empty:
+        teams, players = build_absences(injuries, pipe.poss, pipe.player_box, pipe.games, extra_games)
+        emit(render_absences(players))
+    return SlateSimulator(cfg, feats, games, odds, officials, game_fouls(pipe.events), pipe.player_box,
+                          absences=teams, absent_players=players)
+
+
+ABSENCE_MIN_EFFECT = 0.05  # pts/100: jugadores con menos efecto no se listan
+
+
+def render_absences(players: pd.DataFrame) -> str:
+    """Tabla de bajas que mueven la proyección (pts/100 sobre el ataque propio y el del rival)."""
+    if players.empty:
+        return "BAJAS: sin jugadores del reporte de lesiones con historial reciente en los partidos de hoy"
+    p = players[(players["own_off_adj"].abs() + players["opp_off_adj"].abs()) >= ABSENCE_MIN_EFFECT].copy()
+    if p.empty:
+        return "BAJAS: ninguna baja del reporte mueve la proyección (ya estaban fuera o juegan pocos minutos)"
+    p["Δ neto"] = p["own_off_adj"] - p["opp_off_adj"]
+    out = pd.DataFrame({
+        "Equipo": p["team"].map(lambda t: DISPLAY_ABBR.get(t, t)), "Jugador": p["player_name"],
+        "Estado": p["status"], "P(baja)": p["p_out"].map("{:.0%}".format),
+        "Presencia L10": p["presence"].map("{:.0%}".format), "MPG": p["mpg"].round(1),
+        "Δ ataque propio": p["own_off_adj"].round(2), "Δ ataque rival": p["opp_off_adj"].round(2),
+        "Δ neto": p["Δ neto"].round(2),
+    }).sort_values("Δ neto")
+    return ("BAJAS QUE AJUSTAN LA PROYECCIÓN (pts/100; Δ neto ≈ puntos de margen perdidos por su equipo):\n"
+            + out.to_string(index=False))
 
 
 def report(projections: list, out_dir: Path) -> None:
@@ -118,7 +148,8 @@ def cmd_simulate(cfg: EngineConfig, args: argparse.Namespace) -> None:
                                .rename(columns={"officials": "official"}).dropna()], ignore_index=True)
     feats, pipe = build_features(cfg, lake, args.seasons, upcoming if not upcoming.empty else None)
     extra = upcoming.drop(columns=["officials"], errors="ignore") if not upcoming.empty else None
-    sim = make_simulator(cfg, feats, pipe, odds, officials, extra)
+    injuries = layer.ingest_injuries() if extra is not None and not args.no_injuries else None
+    sim = make_simulator(cfg, feats, pipe, odds, officials, extra, injuries)
     if args.blend:  # mezcla con el cierre ajustada con el backtest point-in-time de la historia
         sim.fit_blender()
     ids = args.game_ids or upcoming["game_id"].tolist()
@@ -281,6 +312,8 @@ def main(argv: list[str] | None = None) -> None:
                            help="mezclar modelo y línea de cierre (ajusta con un backtest previo, ~5 min)")
             q.add_argument("--record-picks", action="store_true",
                            help="guardar los picks en ledger/github/ (línea actual de ESPN)")
+            q.add_argument("--no-injuries", action="store_true",
+                           help="no ajustar por el reporte de lesiones de ESPN de hoy")
         if name in ("backtest", "calibrate"):
             q.add_argument("--min-games", type=int, default=10)
         if name == "backtest":

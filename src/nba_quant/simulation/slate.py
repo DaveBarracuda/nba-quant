@@ -31,6 +31,7 @@ FATIGUE_WINDOW_DAYS = 7
 PROP_LOOKBACK_GAMES = 10
 PROP_TOP_PLAYERS = 6
 STAR_LOOKBACK_GAMES = 15
+STAR_OUT_P = 0.5  # P(baja) desde la que el factor estrella se anula
 CROSS_RIM_WEIGHT = 0.5
 BACKTEST_SIMS = 10_000
 CONTEXT_BACKTEST_SIMS = 2_000  # por celda de la rejilla 3×3 (18.000 sims por partido)
@@ -119,8 +120,13 @@ def _finite(v: object) -> bool:
 class SlateSimulator:
     def __init__(self, cfg: EngineConfig, features: pd.DataFrame, games: pd.DataFrame,
                  odds: pd.DataFrame | None = None, officials: pd.DataFrame | None = None,
-                 game_fouls: pd.DataFrame | None = None, player_box: pd.DataFrame | None = None) -> None:
+                 game_fouls: pd.DataFrame | None = None, player_box: pd.DataFrame | None = None,
+                 absences: pd.DataFrame | None = None, absent_players: pd.DataFrame | None = None) -> None:
         self.cfg = cfg
+        # Bajas del día (sólo partidos futuros): ajuste en pts/100 por (game_id, team) y jugadores.
+        self.absences = (absences.set_index(["game_id", "team"]) if absences is not None and not absences.empty
+                         else pd.DataFrame(columns=["own_off_adj", "opp_off_adj"]))
+        self.absent_players = absent_players if absent_players is not None else pd.DataFrame()
         self.f = features.reset_index() if "team" not in features.columns else features.copy()
         self.f["game_date"] = pd.to_datetime(self.f["game_date"])
         self.games = games.assign(game_date=pd.to_datetime(games["game_date"]))
@@ -236,13 +242,15 @@ class SlateSimulator:
             return self.box
         return self.box[(self.box["team"] == team) & (self.box["game_date"] < date)]
 
-    def _star_factor(self, team: str, opponent: str, date: pd.Timestamp) -> float:
+    def _star_factor(self, team: str, opponent: str, date: pd.Timestamp, game_id: str | None = None) -> float:
         b = self._box_before(team, date)
         if b.empty:
             return 1.0
         recent_ids = b.sort_values("game_date")["game_id"].drop_duplicates().tail(STAR_LOOKBACK_GAMES)
         recent = b[b["game_id"].isin(recent_ids)]
         star = recent.groupby("player_id")["pts"].mean().idxmax()
+        if game_id is not None and self._is_out(game_id, star):
+            return 1.0  # la estrella no juega: su historial contra este rival no aplica
         sb = self.box[(self.box["player_id"] == star) & (self.box["game_date"] < date)]
         vs_opp = sb[(sb["home_team"] == opponent) | (sb["away_team"] == opponent)]["pts"]
         team_pts = recent.groupby("game_id")["pts"].sum().mean()
@@ -267,7 +275,8 @@ class SlateSimulator:
         parts = state.patterns.raw_parts(r["team"], opp, venue, int(r["is_b2b"]), int(r["is_3in4"]),
                                          float(r["rest_days"]), is_favorite)
         return TeamContext(r["team"], self._base_rating(r, base_ortg), parts,
-                           self._other_adjustments(r, lam, state), self._star_factor(r["team"], opp, r["game_date"]))
+                           self._other_adjustments(r, lam, state),
+                           self._star_factor(r["team"], opp, r["game_date"], r["game_id"]))
 
     def _other_adjustments(self, r: pd.Series, lam: float, state: ContextState) -> dict[str, float]:
         """Clases 4 y 5: ineficiencias y dinámicos, en pts/100."""
@@ -283,7 +292,20 @@ class SlateSimulator:
         if not window.empty:
             window = window[window["game_date"] >= r["game_date"] - pd.Timedelta(days=FATIGUE_WINDOW_DAYS)]
         adj["fatigue"] = self.dynamic.fatigue(window)
+        own, opp = (r["game_id"], r["team"]), (r["game_id"], r.get("opponent"))
+        if own in self.absences.index:
+            adj["absences"] = float(self.absences.at[own, "own_off_adj"])
+        if opp in self.absences.index:
+            adj["opp_absences"] = float(self.absences.at[opp, "opp_off_adj"])
         return adj
+
+    def _is_out(self, game_id: str, player_id: object) -> bool:
+        """El jugador está en el reporte de bajas del partido con P(baja) ≥ 0.5."""
+        p = self.absent_players
+        if p.empty:
+            return False
+        hit = p[(p["game_id"] == game_id) & (p["player_id"] == str(player_id))]
+        return bool((hit["p_out"] >= STAR_OUT_P).any())
 
     def _base_rating(self, r: pd.Series, base: float) -> float:
         """Clase 2: mezcla del rating latente con la línea base L5 limpia de sesgos."""

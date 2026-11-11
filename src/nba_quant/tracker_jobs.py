@@ -80,7 +80,7 @@ def run_snapshot(cfg: EngineConfig, tracker_db: Path | None = None, hours: float
     odds = pd.concat([odds, up.reindex(columns=odds.columns)], ignore_index=True)
     seasons = seasons or sorted(int(s) for s in lake.read("games")["season"].unique())[-DEFAULT_SEASONS_BACK:]
     feats, pipe = build_features(cfg, lake, seasons, up)
-    sim = make_simulator(cfg, feats, pipe, odds, lake.read("officials"), up)
+    sim = make_simulator(cfg, feats, pipe, odds, lake.read("officials"), up, layer.ingest_injuries())
     proj = []
     for gid in up["game_id"]:
         try:
