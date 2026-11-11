@@ -1,0 +1,13 @@
+estrategia,grupo,picks,récord,WR,unidades,ROI
+spread,TOP 5 diario,5,2-3-0,0.4,-1.1818181818181817,-0.23636363636363633
+spread,resto,1,1-0-0,1.0,0.8333333333333335,0.8333333333333335
+spread,TOP 5 · a favor + sin mov.,0,0-0-0,,0.0,
+total,TOP 5 diario,5,3-2-0,0.6,0.6803118908382069,0.13606237816764138
+total,resto,1,1-0-0,1.0,0.9090909090909092,0.9090909090909092
+total,TOP 5 · a favor + sin mov.,0,0-0-0,,0.0,
+ml ganador,TOP 5 diario,5,3-2-0,0.6,-1.0986873472793375,-0.2197374694558675
+ml ganador,resto,1,0-1-0,0.0,-1.0,-1.0
+ml ganador,TOP 5 · a favor + sin mov.,0,0-0-0,,0.0,
+ml valor,TOP 5 diario,5,1-4-0,0.2,-3.9107142857142856,-0.7821428571428571
+ml valor,resto,1,0-1-0,0.0,-1.0,-1.0
+ml valor,TOP 5 · a favor + sin mov.,0,0-0-0,,0.0,
