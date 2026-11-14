@@ -1,5 +1,5 @@
 # Ledger de picks del modelo
-_Actualizado: 2026-11-14 05:30 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea del NBA Odds Tracker en ese momento)._
+_Actualizado: 2026-11-14 15:00 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea del NBA Odds Tracker en ese momento)._
 
 Picks del workflow de GitHub *Ejecutar modelo* (líneas de ESPN): [github/LEDGER.md](github/LEDGER.md)
 
@@ -9,26 +9,26 @@ Picks del workflow de GitHub *Ejecutar modelo* (líneas de ESPN): [github/LEDGER
 
 | Grupo | Valor | Picks | Calificados | Récord | WR | Unidades | ROI | CLV medio |
 |---|---|---|---|---|---|---|---|---|
-| GENERAL | todos | 522 | 519 | 252-267-0 | 48.6% | -44.64 | -8.6% | +0.288 |
-| mercado | ml | 174 | 173 | 66-107-0 | 38.2% | -53.56 | -31.0% | +0.002 |
-| mercado | spread | 174 | 173 | 85-88-0 | 49.1% | -10.84 | -6.3% | +0.104 |
-| mercado | total | 174 | 173 | 101-72-0 | 58.4% | +19.76 | +11.4% | +0.757 |
-| movimiento | a favor | 202 | 200 | 111-89-0 | 55.5% | +9.01 | +4.5% | +1.551 |
+| GENERAL | todos | 522 | 522 | 255-267-0 | 48.9% | -40.72 | -7.8% | +0.288 |
+| mercado | ml | 174 | 174 | 67-107-0 | 38.5% | -51.36 | -29.5% | +0.002 |
+| mercado | spread | 174 | 174 | 86-88-0 | 49.4% | -9.98 | -5.7% | +0.104 |
+| mercado | total | 174 | 174 | 102-72-0 | 58.6% | +20.63 | +11.9% | +0.757 |
+| movimiento | a favor | 202 | 202 | 113-89-0 | 55.9% | +12.06 | +6.0% | +1.551 |
 | movimiento | en contra | 154 | 154 | 67-87-0 | 43.5% | -26.84 | -17.4% | -1.065 |
 | movimiento | pendiente | 3 | 3 | 1-2-0 | 33.3% | -1.48 | -49.2% | — |
-| movimiento | sin movimiento | 163 | 162 | 73-89-0 | 45.1% | -25.33 | -15.6% | -0.000 |
-| mercado × movimiento | ml · a favor | 69 | 68 | 32-36-0 | 47.1% | -9.19 | -13.5% | +0.034 |
+| movimiento | sin movimiento | 163 | 163 | 74-89-0 | 45.4% | -24.46 | -15.0% | -0.000 |
+| mercado × movimiento | ml · a favor | 69 | 69 | 33-36-0 | 47.8% | -6.99 | -10.1% | +0.034 |
 | mercado × movimiento | ml · en contra | 65 | 65 | 22-43-0 | 33.8% | -24.13 | -37.1% | -0.032 |
 | mercado × movimiento | ml · pendiente | 1 | 1 | 1-0-0 | 100.0% | +0.52 | +52.4% | — |
 | mercado × movimiento | ml · sin movimiento | 39 | 39 | 11-28-0 | 28.2% | -20.76 | -53.2% | -0.000 |
-| mercado × movimiento | spread · a favor | 56 | 55 | 31-24-0 | 56.4% | +3.92 | +7.1% | +1.625 |
+| mercado × movimiento | spread · a favor | 56 | 56 | 32-24-0 | 57.1% | +4.78 | +8.5% | +1.625 |
 | mercado × movimiento | spread · en contra | 40 | 40 | 17-23-0 | 42.5% | -7.38 | -18.5% | -1.825 |
 | mercado × movimiento | spread · pendiente | 1 | 1 | 0-1-0 | 0.0% | -1.00 | -100.0% | — |
 | mercado × movimiento | spread · sin movimiento | 77 | 77 | 37-40-0 | 48.1% | -6.38 | -8.3% | +0.000 |
 | mercado × movimiento | total · a favor | 77 | 77 | 48-29-0 | 62.3% | +14.28 | +18.5% | +2.857 |
 | mercado × movimiento | total · en contra | 49 | 49 | 28-21-0 | 57.1% | +4.67 | +9.5% | -1.816 |
 | mercado × movimiento | total · pendiente | 1 | 1 | 0-1-0 | 0.0% | -1.00 | -100.0% | — |
-| mercado × movimiento | total · sin movimiento | 47 | 46 | 25-21-0 | 54.3% | +1.81 | +3.9% | +0.000 |
+| mercado × movimiento | total · sin movimiento | 47 | 47 | 26-21-0 | 55.3% | +2.68 | +5.7% | +0.000 |
 
 ## CLV y movimiento del mercado hacia el modelo
 
@@ -45,9 +45,9 @@ _% hacia el modelo = picks en que la línea se movió a favor ÷ picks con movim
 
 | Fecha | Partido | Mercado | Pick | Línea pick | Cierre | Mercado vs modelo | CLV | Alertas | % público en pick | Resultado | Unidades |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 2026-11-13 | OKC @ LAC | ML | LAC ML | 30.0% | 32.5% | ▲ a favor | +2.45 | INFO,RLM | 3 | pendiente | — |
-| 2026-11-13 | OKC @ LAC | Spread | LAC +7.5 | +7.5 | +6.5 | ▲ a favor | +1.00 | INFO | 16 | pendiente | — |
-| 2026-11-13 | OKC @ LAC | Total | Over 221.5 | 221.5 | 221.5 | = sin mov. | +0.00 | — | 82 | pendiente | — |
+| 2026-11-13 | OKC @ LAC | ML | LAC ML | 30.0% | 32.5% | ▲ a favor | +2.45 | INFO,RLM | 3 | ✅ W | +2.20 |
+| 2026-11-13 | OKC @ LAC | Spread | LAC +7.5 | +7.5 | +6.5 | ▲ a favor | +1.00 | INFO | 16 | ✅ W | +0.85 |
+| 2026-11-13 | OKC @ LAC | Total | Over 221.5 | 221.5 | 221.5 | = sin mov. | +0.00 | — | 82 | ✅ W | +0.87 |
 | 2026-11-13 | POR @ SAC | ML | SAC ML | 20.8% | 20.8% | = sin mov. | +0.00 | — | 3 | ❌ L | -1.00 |
 | 2026-11-13 | POR @ SAC | Spread | POR -9.5 | -9.5 | -10.5 | ▲ a favor | +1.00 | STEAM | 76 | ✅ W | +0.87 |
 | 2026-11-13 | POR @ SAC | Total | Under 228.5 | 228.5 | 229.5 | ▼ en contra | -1.00 | — | 28 | ✅ W | +0.93 |
