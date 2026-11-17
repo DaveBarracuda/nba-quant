@@ -170,7 +170,8 @@ def fetch_kaggle_dataset(dataset: str, dest: Path) -> list[Path]:
     dest.mkdir(parents=True, exist_ok=True)
     try:
         subprocess.run(["kaggle", "datasets", "download", "-d", dataset, "-p", str(dest), "--unzip"],
-                       check=True, capture_output=True, timeout=1800)
+                       check=True, capture_output=True, timeout=1800,
+                       creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     except (OSError, subprocess.SubprocessError) as exc:
         log.error("Kaggle download falló: %s", exc)
         return []

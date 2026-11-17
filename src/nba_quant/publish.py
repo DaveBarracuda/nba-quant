@@ -11,11 +11,14 @@ from nba_quant.logging_utils import get_logger
 log = get_logger("publish")
 GIT_TIMEOUT_S = 120
 COMMIT_PREFIX = "chore(ledger): picks al"
+# La tarea programada corre con pythonw.exe, que no tiene consola: sin este flag Windows le crea
+# una ventana nueva a cada git hijo. Fuera de Windows el flag no existe y 0 es el valor por defecto.
+NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
 
 def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True,
-                          timeout=GIT_TIMEOUT_S, check=False)
+                          timeout=GIT_TIMEOUT_S, check=False, creationflags=NO_WINDOW)
 
 
 def publish_ledger(repo: Path = PROJECT_ROOT, ledger_dir: Path = DEFAULT_LEDGER_DIR,
