@@ -20,3 +20,6 @@ htmlcov/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+
+# Respaldos XML de tareas del Programador de Windows: son de la PC, no del proyecto.
+backup-tareas/
