@@ -1,5 +1,5 @@
 # Ledger de picks del modelo
-_Actualizado: 2026-11-19 05:30 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea del NBA Odds Tracker en ese momento)._
+_Actualizado: 2026-11-19 20:22 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea del NBA Odds Tracker en ese momento)._
 
 Picks del workflow de GitHub *Ejecutar modelo* (líneas de ESPN): [github/LEDGER.md](github/LEDGER.md)
 
@@ -9,23 +9,23 @@ Picks del workflow de GitHub *Ejecutar modelo* (líneas de ESPN): [github/LEDGER
 
 | Grupo | Valor | Picks | Calificados | Récord | WR | Unidades | ROI | CLV medio |
 |---|---|---|---|---|---|---|---|---|
-| GENERAL | todos | 639 | 636 | 318-318-0 | 50.0% | -30.61 | -4.8% | +0.212 |
-| mercado | ml | 213 | 212 | 84-128-0 | 39.6% | -52.93 | -25.0% | +0.000 |
-| mercado | spread | 213 | 212 | 106-106-0 | 50.0% | -10.15 | -4.8% | +0.052 |
-| mercado | total | 213 | 212 | 128-84-0 | 60.4% | +32.48 | +15.3% | +0.585 |
-| movimiento | a favor | 248 | 247 | 142-105-0 | 57.5% | +24.76 | +10.0% | +1.459 |
-| movimiento | en contra | 195 | 193 | 85-108-0 | 44.0% | -31.33 | -16.2% | -1.163 |
+| GENERAL | todos | 639 | 639 | 320-319-0 | 50.1% | -27.35 | -4.3% | +0.212 |
+| mercado | ml | 213 | 213 | 85-128-0 | 39.9% | -49.52 | -23.2% | +0.000 |
+| mercado | spread | 213 | 213 | 107-106-0 | 50.2% | -9.30 | -4.4% | +0.052 |
+| mercado | total | 213 | 213 | 128-85-0 | 60.1% | +31.48 | +14.8% | +0.585 |
+| movimiento | a favor | 248 | 248 | 142-106-0 | 57.3% | +23.76 | +9.6% | +1.459 |
+| movimiento | en contra | 195 | 195 | 87-108-0 | 44.6% | -27.08 | -13.9% | -1.163 |
 | movimiento | pendiente | 3 | 3 | 1-2-0 | 33.3% | -1.48 | -49.2% | — |
 | movimiento | sin movimiento | 193 | 193 | 90-103-0 | 46.6% | -22.55 | -11.7% | -0.000 |
 | mercado × movimiento | ml · a favor | 89 | 89 | 43-46-0 | 48.3% | -5.52 | -6.2% | +0.032 |
-| mercado × movimiento | ml · en contra | 77 | 76 | 26-50-0 | 34.2% | -27.37 | -36.0% | -0.036 |
+| mercado × movimiento | ml · en contra | 77 | 77 | 27-50-0 | 35.1% | -23.96 | -31.1% | -0.036 |
 | mercado × movimiento | ml · pendiente | 1 | 1 | 1-0-0 | 100.0% | +0.52 | +52.4% | — |
 | mercado × movimiento | ml · sin movimiento | 46 | 46 | 14-32-0 | 30.4% | -20.57 | -44.7% | -0.000 |
 | mercado × movimiento | spread · a favor | 66 | 66 | 38-28-0 | 57.6% | +6.04 | +9.2% | +1.636 |
-| mercado × movimiento | spread · en contra | 51 | 50 | 21-29-0 | 42.0% | -9.83 | -19.7% | -1.902 |
+| mercado × movimiento | spread · en contra | 51 | 51 | 22-29-0 | 43.1% | -8.98 | -17.6% | -1.902 |
 | mercado × movimiento | spread · pendiente | 1 | 1 | 0-1-0 | 0.0% | -1.00 | -100.0% | — |
 | mercado × movimiento | spread · sin movimiento | 95 | 95 | 47-48-0 | 49.5% | -5.36 | -5.6% | +0.000 |
-| mercado × movimiento | total · a favor | 93 | 92 | 61-31-0 | 66.3% | +24.23 | +26.3% | +2.699 |
+| mercado × movimiento | total · a favor | 93 | 93 | 61-32-0 | 65.6% | +23.23 | +25.0% | +2.699 |
 | mercado × movimiento | total · en contra | 67 | 67 | 38-29-0 | 56.7% | +5.87 | +8.8% | -1.896 |
 | mercado × movimiento | total · pendiente | 1 | 1 | 0-1-0 | 0.0% | -1.00 | -100.0% | — |
 | mercado × movimiento | total · sin movimiento | 52 | 52 | 29-23-0 | 55.8% | +3.38 | +6.5% | +0.000 |
@@ -48,9 +48,9 @@ _% hacia el modelo = picks en que la línea se movió a favor ÷ picks con movim
 | 2026-11-18 | PHX @ SAC | ML | SAC ML | 30.0% | 29.9% | = sin mov. | -0.07 | — | 5 | ❌ L | -1.00 |
 | 2026-11-18 | PHX @ SAC | Spread | PHX -6.5 | -6.5 | -7.5 | ▲ a favor | +1.00 | STEAM | 75 | ✅ W | +0.87 |
 | 2026-11-18 | PHX @ SAC | Total | Over 225.5 | 225.5 | 226.5 | ▲ a favor | +1.00 | RLM | 63 | ✅ W | +0.93 |
-| 2026-11-18 | UTAH @ LAL | ML | UTAH ML | 21.8% | 18.8% | ▼ en contra | -2.99 | INFO | 3 | pendiente | — |
-| 2026-11-18 | UTAH @ LAL | Spread | UTAH +10.5 | +10.5 | +11.5 | ▼ en contra | -1.00 | INFO,RLM,STEAM | 32 | pendiente | — |
-| 2026-11-18 | UTAH @ LAL | Total | Over 228.5 | 228.5 | 229.5 | ▲ a favor | +1.00 | INFO | 75 | pendiente | — |
+| 2026-11-18 | UTAH @ LAL | ML | UTAH ML | 21.8% | 18.8% | ▼ en contra | -2.99 | INFO | 3 | ✅ W | +3.41 |
+| 2026-11-18 | UTAH @ LAL | Spread | UTAH +10.5 | +10.5 | +11.5 | ▼ en contra | -1.00 | INFO,RLM,STEAM | 32 | ✅ W | +0.85 |
+| 2026-11-18 | UTAH @ LAL | Total | Over 228.5 | 228.5 | 229.5 | ▲ a favor | +1.00 | INFO | 75 | ❌ L | -1.00 |
 | 2026-11-18 | GS @ DAL | ML | DAL ML | 63.7% | 63.7% | = sin mov. | +0.00 | — | 87 | ✅ W | +0.51 |
 | 2026-11-18 | GS @ DAL | Spread | DAL -4.5 | -4.5 | -4.5 | = sin mov. | +0.00 | — | 65 | ✅ W | +0.87 |
 | 2026-11-18 | GS @ DAL | Total | Over 224.5 | 224.5 | 223.5 | ▼ en contra | -1.00 | INFO | 66 | ❌ L | -1.00 |
