@@ -1,5 +1,5 @@
 # Ledger de picks — workflow de GitHub
-_Actualizado: 2026-11-20 15:39 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea de DraftKings del NBA Odds Tracker (o de ESPN si el partido no está en el tracker) en ese momento)._
+_Actualizado: 2026-11-20 19:53 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea de DraftKings del NBA Odds Tracker (o de ESPN si el partido no está en el tracker) en ese momento)._
 
 Generado por el workflow *Ejecutar modelo* (modelo sin mezcla). El cierre y el movimiento a favor / en contra se toman al liquidar de la misma fuente que la línea del pick. Ledger de la PC local: [../LEDGER.md](../LEDGER.md)
 
@@ -9,26 +9,26 @@ Generado por el workflow *Ejecutar modelo* (modelo sin mezcla). El cierre y el m
 
 | Grupo | Valor | Picks | Calificados | Récord | WR | Unidades | ROI | CLV medio |
 |---|---|---|---|---|---|---|---|---|
-| GENERAL | todos | 621 | 582 | 263-319-0 | 45.2% | -78.20 | -13.4% | -0.007 |
-| mercado | ml | 207 | 194 | 74-120-0 | 38.1% | -51.32 | -26.5% | -0.000 |
-| mercado | spread | 207 | 194 | 86-108-0 | 44.3% | -29.63 | -15.3% | -0.057 |
-| mercado | total | 207 | 194 | 103-91-0 | 53.1% | +2.76 | +1.4% | +0.036 |
-| movimiento | a favor | 163 | 163 | 87-76-0 | 53.4% | +6.05 | +3.7% | +0.881 |
+| GENERAL | todos | 621 | 594 | 270-324-0 | 45.5% | -76.88 | -12.9% | -0.002 |
+| mercado | ml | 207 | 198 | 75-123-0 | 37.9% | -53.44 | -27.0% | +0.000 |
+| mercado | spread | 207 | 198 | 90-108-0 | 45.5% | -25.99 | -13.1% | -0.045 |
+| mercado | total | 207 | 198 | 105-93-0 | 53.0% | +2.55 | +1.3% | +0.040 |
+| movimiento | a favor | 167 | 167 | 88-79-0 | 52.7% | +3.91 | +2.3% | +0.878 |
 | movimiento | en contra | 152 | 152 | 59-93-0 | 38.8% | -35.26 | -23.2% | -0.971 |
-| movimiento | pendiente | 39 | 0 | 0-0-0 | — | +0.00 | — | — |
-| movimiento | sin movimiento | 267 | 267 | 117-150-0 | 43.8% | -48.99 | -18.3% | +0.000 |
-| mercado × movimiento | ml · a favor | 69 | 69 | 34-35-0 | 49.3% | -0.37 | -0.5% | +0.022 |
+| movimiento | pendiente | 27 | 0 | 0-0-0 | — | +0.00 | — | — |
+| movimiento | sin movimiento | 275 | 275 | 123-152-0 | 44.7% | -45.52 | -16.6% | +0.000 |
+| mercado × movimiento | ml · a favor | 71 | 71 | 34-37-0 | 47.9% | -2.37 | -3.3% | +0.022 |
 | mercado × movimiento | ml · en contra | 61 | 61 | 15-46-0 | 24.6% | -28.79 | -47.2% | -0.026 |
-| mercado × movimiento | ml · pendiente | 13 | 0 | 0-0-0 | — | +0.00 | — | — |
-| mercado × movimiento | ml · sin movimiento | 64 | 64 | 25-39-0 | 39.1% | -22.17 | -34.6% | +0.000 |
-| mercado × movimiento | spread · a favor | 33 | 33 | 16-17-0 | 48.5% | -2.87 | -8.7% | +1.485 |
+| mercado × movimiento | ml · pendiente | 9 | 0 | 0-0-0 | — | +0.00 | — | — |
+| mercado × movimiento | ml · sin movimiento | 66 | 66 | 26-40-0 | 39.4% | -22.28 | -33.8% | +0.000 |
+| mercado × movimiento | spread · a favor | 34 | 34 | 17-17-0 | 50.0% | -2.01 | -5.9% | +1.500 |
 | mercado × movimiento | spread · en contra | 38 | 38 | 15-23-0 | 39.5% | -9.27 | -24.4% | -1.579 |
-| mercado × movimiento | spread · pendiente | 13 | 0 | 0-0-0 | — | +0.00 | — | — |
-| mercado × movimiento | spread · sin movimiento | 123 | 123 | 55-68-0 | 44.7% | -17.49 | -14.2% | +0.000 |
-| mercado × movimiento | total · a favor | 61 | 61 | 37-24-0 | 60.7% | +9.29 | +15.2% | +1.525 |
+| mercado × movimiento | spread · pendiente | 9 | 0 | 0-0-0 | — | +0.00 | — | — |
+| mercado × movimiento | spread · sin movimiento | 126 | 126 | 58-68-0 | 46.0% | -14.70 | -11.7% | +0.000 |
+| mercado × movimiento | total · a favor | 62 | 62 | 37-25-0 | 59.7% | +8.29 | +13.4% | +1.516 |
 | mercado × movimiento | total · en contra | 53 | 53 | 29-24-0 | 54.7% | +2.80 | +5.3% | -1.623 |
-| mercado × movimiento | total · pendiente | 13 | 0 | 0-0-0 | — | +0.00 | — | — |
-| mercado × movimiento | total · sin movimiento | 80 | 80 | 37-43-0 | 46.2% | -9.33 | -11.7% | +0.000 |
+| mercado × movimiento | total · pendiente | 9 | 0 | 0-0-0 | — | +0.00 | — | — |
+| mercado × movimiento | total · sin movimiento | 83 | 83 | 39-44-0 | 47.0% | -8.54 | -10.3% | +0.000 |
 
 ## CLV y movimiento del mercado hacia el modelo
 
@@ -36,10 +36,10 @@ _% hacia el modelo = picks en que la línea se movió a favor ÷ picks con movim
 
 | Mercado | Con cierre | ▲ a favor | ▼ en contra | % hacia el modelo | p (azar) | CLV medio | IC 95% |
 |---|---|---|---|---|---|---|---|
-| Spread | 194 | 33 | 38 | 46.5% | 0.762 | -0.06 pts | [-0.22, +0.11] |
-| Total | 194 | 61 | 53 | 53.5% | 0.256 | +0.04 pts | [-0.16, +0.23] |
-| ML | 194 | 69 | 61 | 53.1% | 0.270 | -0.02 pp | [-0.42, +0.38] |
-| **Todos** | 582 | 163 | 152 | 51.7% | 0.287 | — | — |
+| Spread | 198 | 34 | 38 | 47.2% | 0.722 | -0.05 pts | [-0.21, +0.12] |
+| Total | 198 | 62 | 53 | 53.9% | 0.228 | +0.04 pts | [-0.15, +0.24] |
+| ML | 198 | 71 | 61 | 53.8% | 0.217 | +0.00 pp | [-0.39, +0.40] |
+| **Todos** | 594 | 167 | 152 | 52.4% | 0.217 | — | — |
 
 ## Picks
 
@@ -72,18 +72,18 @@ _% hacia el modelo = picks en que la línea se movió a favor ÷ picks con movim
 | 2026-11-20 | CHA @ ATL | ML | CHA ML | 32.5% | — | … pendiente | — | — | 11 | pendiente | — |
 | 2026-11-20 | CHA @ ATL | Spread | CHA +6.5 | +6.5 | — | … pendiente | — | — | 33 | pendiente | — |
 | 2026-11-20 | CHA @ ATL | Total | Over 218.5 | 218.5 | — | … pendiente | — | — | 74 | pendiente | — |
-| 2026-11-19 | GS @ MEM | ML | GS ML | 34.3% | — | … pendiente | — | — | 15 | pendiente | — |
-| 2026-11-19 | GS @ MEM | Spread | MEM -5.5 | -5.5 | — | … pendiente | — | — | 80 | pendiente | — |
-| 2026-11-19 | GS @ MEM | Total | Over 224.5 | 224.5 | — | … pendiente | — | — | 72 | pendiente | — |
-| 2026-11-19 | LAC @ SA | ML | LAC ML | 12.5% | — | … pendiente | — | — | 9 | pendiente | — |
-| 2026-11-19 | LAC @ SA | Spread | LAC +15.5 | +15.5 | — | … pendiente | — | — | 44 | pendiente | — |
-| 2026-11-19 | LAC @ SA | Total | Over 224.5 | 224.5 | — | … pendiente | — | — | 77 | pendiente | — |
-| 2026-11-19 | NY @ MIN | ML | NY ML | 51.0% | — | … pendiente | — | — | 59 | pendiente | — |
-| 2026-11-19 | NY @ MIN | Spread | NY -1.5 | -1.5 | — | … pendiente | — | — | 62 | pendiente | — |
-| 2026-11-19 | NY @ MIN | Total | Under 216.5 | 216.5 | — | … pendiente | — | — | 19 | pendiente | — |
-| 2026-11-19 | POR @ MIL | ML | MIL ML | 20.1% | — | … pendiente | — | — | 10 | pendiente | — |
-| 2026-11-19 | POR @ MIL | Spread | MIL +11.5 | +11.5 | — | … pendiente | — | — | 34 | pendiente | — |
-| 2026-11-19 | POR @ MIL | Total | Under 230.5 | 230.5 | — | … pendiente | — | — | 35 | pendiente | — |
+| 2026-11-19 | GS @ MEM | ML | GS ML | 34.3% | 35.4% | ▲ a favor | +1.16 | RLM | 14 | ❌ L | -1.00 |
+| 2026-11-19 | GS @ MEM | Spread | MEM -5.5 | -5.5 | -5.5 | = sin mov. | +0.00 | STEAM | 79 | ✅ W | +0.90 |
+| 2026-11-19 | GS @ MEM | Total | Over 224.5 | 224.5 | 225.5 | ▲ a favor | +1.00 | — | 74 | ❌ L | -1.00 |
+| 2026-11-19 | LAC @ SA | ML | LAC ML | 12.5% | 12.6% | = sin mov. | +0.16 | — | 8 | ❌ L | -1.00 |
+| 2026-11-19 | LAC @ SA | Spread | LAC +15.5 | +15.5 | +15.5 | = sin mov. | -0.00 | — | 41 | ✅ W | +0.91 |
+| 2026-11-19 | LAC @ SA | Total | Over 224.5 | 224.5 | 224.5 | = sin mov. | +0.00 | — | 78 | ✅ W | +0.88 |
+| 2026-11-19 | NY @ MIN | ML | NY ML | 51.0% | 51.0% | = sin mov. | -0.00 | RLM | 59 | ✅ W | +0.88 |
+| 2026-11-19 | NY @ MIN | Spread | NY -1.5 | -1.5 | -1.5 | = sin mov. | -0.00 | — | 61 | ✅ W | +0.98 |
+| 2026-11-19 | NY @ MIN | Total | Under 216.5 | 216.5 | 216.5 | = sin mov. | -0.00 | — | 19 | ✅ W | +0.91 |
+| 2026-11-19 | POR @ MIL | ML | MIL ML | 20.1% | 24.0% | ▲ a favor | +3.86 | INFO | 9 | ❌ L | -1.00 |
+| 2026-11-19 | POR @ MIL | Spread | MIL +11.5 | +11.5 | +9.5 | ▲ a favor | +2.00 | INFO,STEAM | 32 | ✅ W | +0.85 |
+| 2026-11-19 | POR @ MIL | Total | Under 230.5 | 230.5 | 230.5 | = sin mov. | -0.00 | INFO,STEAM | 35 | ❌ L | -1.00 |
 | 2026-11-18 | PHX @ SAC | ML | PHX ML | 69.1% | 70.1% | ▲ a favor | +0.94 | — | 95 | ✅ W | +0.39 |
 | 2026-11-18 | PHX @ SAC | Spread | PHX -7.5 | -7.5 | -7.5 | = sin mov. | -0.00 | STEAM | 75 | ✅ W | +0.95 |
 | 2026-11-18 | PHX @ SAC | Total | Over 226.5 | 226.5 | 226.5 | = sin mov. | +0.00 | — | 63 | ✅ W | +0.87 |
