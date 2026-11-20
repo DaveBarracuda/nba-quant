@@ -1,5 +1,5 @@
 # Ledger de picks del modelo
-_Actualizado: 2026-11-19 20:22 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea del NBA Odds Tracker en ese momento)._
+_Actualizado: 2026-11-20 01:13 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea del NBA Odds Tracker en ese momento)._
 
 Picks del workflow de GitHub *Ejecutar modelo* (líneas de ESPN): [github/LEDGER.md](github/LEDGER.md)
 
