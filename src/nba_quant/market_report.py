@@ -9,6 +9,8 @@ tickets del público). Si el partido no está en el tracker, apertura -> línea 
 
 from __future__ import annotations
 
+from typing import NamedTuple
+
 import numpy as np
 import pandas as pd
 
@@ -31,6 +33,66 @@ LEGEND = ("Hora de CDMX · línea desde el lado del pick (ML: probabilidad sin v
           "y 0.5 pp (ML) · Edge = P modelo − P mercado sin vig · EV por unidad al precio actual · ⚠ = a la "
           "línea actual ya no queda valor (EV ≤ 0 o edge < 1 pp) · Alertas del tracker sin NOISE · % público = "
           "tickets en el lado del pick (Action Network).")
+
+
+# Lectura de totales (reglas acordadas a partir del historial de picks): la mejor franja es 3–8 pts de
+# ventaja; 8+ históricamente rinde peor (stake reducido); sin movimiento → stake chico; en contra → fuera.
+EDGE_MIN_PTS = 3.0
+EDGE_MAX_PTS = 8.0
+SHARP_ALERTS = frozenset({"STEAM", "RLM"})
+TIER_ORDER = {"🟢": 0, "🟡": 1, "⏳": 2, "❌": 3}
+TOTALS_COLUMNS = ["Veredicto", "Hora", "Partido", "Pick", "Modelo", "Ventaja", "Línea (apertura → actual)",
+                  "Alertas", "Motivo"]
+TOTALS_LEGEND = ("Reglas: mercado a favor del modelo con ventaja de 3–8 pts → normal (GRADUAL = prioridad) · "
+                 "ventaja 8+ → reducido · ventaja < 3 → mínimo · sin movimiento → chico · en contra → fuera "
+                 "(sobre todo con STEAM/RLM) · ⚠ sin valor a la línea actual → fuera. Ventaja = puntos entre "
+                 "el total del modelo y la línea, desde el lado del pick.")
+
+
+class TotalVerdict(NamedTuple):
+    tier: str
+    stake: str
+    reason: str
+
+
+def classify_total(category: str, edge_pts: float, value_left: bool, alerts: str) -> TotalVerdict:
+    """Veredicto de un total según dirección del mercado, alertas del tracker y ventaja en puntos."""
+    kinds = set(alerts.split(",")) if alerts and alerts != "—" else set()
+    if not value_left:
+        return TotalVerdict("❌", "Fuera", "sin valor a la línea actual")
+    if category == "en contra":
+        sharp = ",".join(sorted(kinds & SHARP_ALERTS))
+        return TotalVerdict("❌", "Fuera", f"en contra con STEAM/RLM ({sharp})" if sharp
+                            else "mercado en contra del modelo")
+    if category == "sin dato":
+        return TotalVerdict("⏳", "Revisar", "sin línea de apertura: revisar el movimiento a mano")
+    if edge_pts < EDGE_MIN_PTS:
+        return TotalVerdict("🟡", "Mínimo", f"ventaja menor a {EDGE_MIN_PTS:g} pts")
+    if category == "sin movimiento":
+        extra = f"; ventaja {EDGE_MAX_PTS:g}+" if edge_pts >= EDGE_MAX_PTS else ""
+        return TotalVerdict("🟡", "Chico", f"sin movimiento neto{extra}")
+    if edge_pts >= EDGE_MAX_PTS:
+        return TotalVerdict("🟡", "Reducido", f"a favor, pero ventaja {EDGE_MAX_PTS:g}+ (históricamente peor)")
+    note = " (GRADUAL: prioridad)" if "GRADUAL" in kinds else ""
+    return TotalVerdict("🟢", "Normal", f"a favor del modelo, franja {EDGE_MIN_PTS:g}–{EDGE_MAX_PTS:g}{note}")
+
+
+def totals_read(report: pd.DataFrame) -> pd.DataFrame:
+    """Una fila por total con su veredicto, ordenada de mejor a peor y por hora."""
+    if report.empty or "model_total" not in report:
+        return pd.DataFrame(columns=TOTALS_COLUMNS)
+    rows = []
+    for r in report[report["Mercado"] == "Total"].to_dict("records"):
+        edge = (r["model_total"] - r["line"]) * (1 if r["side_a"] else -1)
+        v = classify_total(r["category"], edge, bool(r["value_left"]), r["Alertas"])
+        rows.append({"_order": TIER_ORDER[v.tier], "_tip": r["tip"], "Veredicto": f"{v.tier} {v.stake}",
+                     "Hora": r["Hora"], "Partido": r["Partido"], "Pick": r["Pick"],
+                     "Modelo": f"{r['model_total']:.1f}", "Ventaja": f"{edge:+.1f}",
+                     "Línea (apertura → actual)": r["Línea (apertura → actual)"], "Alertas": r["Alertas"],
+                     "Motivo": v.reason})
+    if not rows:
+        return pd.DataFrame(columns=TOTALS_COLUMNS)
+    return pd.DataFrame(rows).sort_values(["_order", "_tip"]).reset_index(drop=True)[TOTALS_COLUMNS]
 
 
 def _abbr(team: str) -> str:
@@ -151,6 +213,8 @@ def build_report(preds: pd.DataFrame, projections: list, upcoming: pd.DataFrame,
                 "Valor": "✓" if r["value_left"] else "⚠", "Alertas": alerts, "% público": public,
                 "Fuente": source,
                 "move": r["move"], "edge_pp": r["edge_pp"], "ev": r["ev"],
+                "side_a": r["side_a"], "line": r["line"], "value_left": r["value_left"],
+                "model_total": p.exp_total,
             })
     if not rows:
         return pd.DataFrame()
@@ -170,6 +234,9 @@ def render_text(report: pd.DataFrame) -> str:
     parts = [LEGEND, ""]
     for title, d in _groups(report):
         parts += [f"{title} ({len(d)})", d.to_string(index=False) if len(d) else "  (ninguno)", ""]
+    totals = totals_read(report)
+    if len(totals):
+        parts += ["LECTURA DE TOTALES:", TOTALS_LEGEND, totals.to_string(index=False), ""]
     return "\n".join(parts)
 
 
@@ -184,8 +251,12 @@ def render_markdown(report: pd.DataFrame, date: str) -> str:
     if report.empty:
         return "\n".join(parts + ["_Sin líneas de mercado de ESPN para comparar._", ""])
     counts = report["category"].value_counts()
-    parts += [f"**{counts.get('a favor', 0)}** picks con el mercado a favor · **{counts.get('en contra', 0)}** "
-              f"en contra · **{counts.get('sin movimiento', 0)}** sin movimiento", "", f"_{LEGEND}_", ""]
+    parts += [(f"**{counts.get('a favor', 0)}** picks con el mercado a favor · **{counts.get('en contra', 0)}** "
+               f"en contra · **{counts.get('sin movimiento', 0)}** sin movimiento"), ""]
+    totals = totals_read(report)
+    if len(totals):
+        parts += ["### Lectura de totales", "", f"_{TOTALS_LEGEND}_", "", _markdown_table(totals), ""]
+    parts += [f"_{LEGEND}_", ""]
     for title, d in _groups(report):
         parts += [f"### {title} ({len(d)})", "", _markdown_table(d) if len(d) else "_Ninguno._", ""]
     return "\n".join(parts)
