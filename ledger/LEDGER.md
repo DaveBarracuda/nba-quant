@@ -1,5 +1,5 @@
 # Ledger de picks del modelo
-_Actualizado: 2026-11-21 05:30 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea del NBA Odds Tracker en ese momento)._
+_Actualizado: 2026-11-21 15:33 UTC · un pick por partido y mercado (primer snapshot del modelo, con la línea del NBA Odds Tracker en ese momento)._
 
 Picks del workflow de GitHub *Ejecutar modelo* (líneas de ESPN): [github/LEDGER.md](github/LEDGER.md)
 
@@ -9,26 +9,26 @@ Picks del workflow de GitHub *Ejecutar modelo* (líneas de ESPN): [github/LEDGER
 
 | Grupo | Valor | Picks | Calificados | Récord | WR | Unidades | ROI | CLV medio |
 |---|---|---|---|---|---|---|---|---|
-| GENERAL | todos | 666 | 663 | 331-332-0 | 49.9% | -29.82 | -4.5% | +0.213 |
-| mercado | ml | 222 | 221 | 88-133-0 | 39.8% | -51.20 | -23.2% | +0.000 |
-| mercado | spread | 222 | 221 | 112-109-0 | 50.7% | -7.72 | -3.5% | +0.059 |
-| mercado | total | 222 | 221 | 131-90-0 | 59.3% | +29.10 | +13.2% | +0.579 |
-| movimiento | a favor | 260 | 258 | 148-110-0 | 57.4% | +26.17 | +10.1% | +1.446 |
+| GENERAL | todos | 666 | 666 | 332-334-0 | 49.8% | -30.95 | -4.6% | +0.213 |
+| mercado | ml | 222 | 222 | 88-134-0 | 39.6% | -52.20 | -23.5% | +0.000 |
+| mercado | spread | 222 | 222 | 112-110-0 | 50.5% | -8.72 | -3.9% | +0.059 |
+| mercado | total | 222 | 222 | 132-90-0 | 59.5% | +29.97 | +13.5% | +0.579 |
+| movimiento | a favor | 260 | 260 | 148-112-0 | 56.9% | +24.17 | +9.3% | +1.446 |
 | movimiento | en contra | 203 | 203 | 89-114-0 | 43.8% | -31.19 | -15.4% | -1.157 |
 | movimiento | pendiente | 3 | 3 | 1-2-0 | 33.3% | -1.48 | -49.2% | — |
-| movimiento | sin movimiento | 200 | 199 | 93-106-0 | 46.7% | -23.33 | -11.7% | -0.000 |
-| mercado × movimiento | ml · a favor | 94 | 93 | 45-48-0 | 48.4% | -4.60 | -5.0% | +0.032 |
+| movimiento | sin movimiento | 200 | 200 | 94-106-0 | 47.0% | -22.46 | -11.2% | -0.000 |
+| mercado × movimiento | ml · a favor | 94 | 94 | 45-49-0 | 47.9% | -5.60 | -6.0% | +0.032 |
 | mercado × movimiento | ml · en contra | 80 | 80 | 27-53-0 | 33.8% | -26.96 | -33.7% | -0.036 |
 | mercado × movimiento | ml · pendiente | 1 | 1 | 1-0-0 | 100.0% | +0.52 | +52.4% | — |
 | mercado × movimiento | ml · sin movimiento | 47 | 47 | 15-32-0 | 31.9% | -20.16 | -42.9% | -0.000 |
-| mercado × movimiento | spread · a favor | 68 | 67 | 39-28-0 | 58.2% | +6.92 | +10.3% | +1.691 |
+| mercado × movimiento | spread · a favor | 68 | 68 | 39-29-0 | 57.4% | +5.92 | +8.7% | +1.691 |
 | mercado × movimiento | spread · en contra | 55 | 55 | 24-31-0 | 43.6% | -9.09 | -16.5% | -1.855 |
 | mercado × movimiento | spread · pendiente | 1 | 1 | 0-1-0 | 0.0% | -1.00 | -100.0% | — |
 | mercado × movimiento | spread · sin movimiento | 98 | 98 | 49-49-0 | 50.0% | -4.55 | -4.6% | +0.000 |
 | mercado × movimiento | total · a favor | 98 | 98 | 64-34-0 | 65.3% | +23.86 | +24.3% | +2.633 |
 | mercado × movimiento | total · en contra | 68 | 68 | 38-30-0 | 55.9% | +4.87 | +7.2% | -1.912 |
 | mercado × movimiento | total · pendiente | 1 | 1 | 0-1-0 | 0.0% | -1.00 | -100.0% | — |
-| mercado × movimiento | total · sin movimiento | 55 | 54 | 29-25-0 | 53.7% | +1.38 | +2.6% | +0.000 |
+| mercado × movimiento | total · sin movimiento | 55 | 55 | 30-25-0 | 54.5% | +2.25 | +4.1% | +0.000 |
 
 ## CLV y movimiento del mercado hacia el modelo
 
@@ -45,9 +45,9 @@ _% hacia el modelo = picks en que la línea se movió a favor ÷ picks con movim
 
 | Fecha | Partido | Mercado | Pick | Línea pick | Cierre | Mercado vs modelo | CLV | Alertas | % público en pick | Resultado | Unidades |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 2026-11-20 | HOU @ DEN | ML | HOU ML | 43.7% | 52.7% | ▲ a favor | +9.08 | STEAM | 45 | pendiente | — |
-| 2026-11-20 | HOU @ DEN | Spread | HOU +3.5 | +3.5 | -1.5 | ▲ a favor | +5.00 | INFO,RLM | 60 | pendiente | — |
-| 2026-11-20 | HOU @ DEN | Total | Over 227.5 | 227.5 | 227.5 | = sin mov. | +0.00 | RLM | 44 | pendiente | — |
+| 2026-11-20 | HOU @ DEN | ML | HOU ML | 43.7% | 52.7% | ▲ a favor | +9.08 | STEAM | 45 | ❌ L | -1.00 |
+| 2026-11-20 | HOU @ DEN | Spread | HOU +3.5 | +3.5 | -1.5 | ▲ a favor | +5.00 | INFO,RLM | 60 | ❌ L | -1.00 |
+| 2026-11-20 | HOU @ DEN | Total | Over 227.5 | 227.5 | 227.5 | = sin mov. | +0.00 | RLM | 44 | ✅ W | +0.87 |
 | 2026-11-20 | SAC @ LAL | ML | SAC ML | 13.2% | 14.1% | ▲ a favor | +0.97 | RLM | 3 | ❌ L | -1.00 |
 | 2026-11-20 | SAC @ LAL | Spread | SAC +14.5 | +14.5 | +14.5 | = sin mov. | -0.00 | — | 35 | ✅ W | +0.91 |
 | 2026-11-20 | SAC @ LAL | Total | Over 228.5 | 228.5 | 229.5 | ▲ a favor | +1.00 | — | 72 | ❌ L | -1.00 |
